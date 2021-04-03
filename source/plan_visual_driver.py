@@ -82,15 +82,12 @@ class PlanVisualiser:
                 # Adding record for this swimlane. Also remember ordering as is important later.
                 swimlane_record = {
                     'swimlane_order': entry_num + 1,
-                    'lowest_track_within_lane': track_num_low,
                     'highest_track_within_lane': track_num_high
                 }
                 swimlane_data[swimlane] = swimlane_record
                 entry_num += 1
             else:
                 swimlane_record = swimlane_data[swimlane]
-                if track_num_low < swimlane_record['lowest_track_within_lane']:
-                    swimlane_record['lowest_track_within_lane'] = track_num_low
                 if track_num_high > swimlane_record['highest_track_within_lane']:
                     swimlane_record['highest_track_within_lane'] = track_num_high
 
@@ -105,10 +102,8 @@ class PlanVisualiser:
             assert(len(swimlane_entries) == 1)
 
             swimlane, swimlane_entry = swimlane_entries[0]
-            tracks_for_swimlane = \
-                swimlane_entry['highest_track_within_lane'] - swimlane_entry['lowest_track_within_lane'] + 1
             start_track = end_track + 1
-            end_track = end_track + tracks_for_swimlane - 1
+            end_track = end_track + swimlane_entry['highest_track_within_lane'] - 1
             swimlane_plot_data[swimlane] = {
                 'start_track': start_track,
                 'end_track': end_track
