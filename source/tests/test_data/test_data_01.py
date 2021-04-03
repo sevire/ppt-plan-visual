@@ -2,6 +2,11 @@ from datetime import datetime
 
 from pptx.util import Cm
 
+
+def date_parse(text_date):
+    return datetime.strptime(text_date, "%Y%m%d")
+
+
 excel_plan_config = {
     'excel_plan_sheet_name': 'ppt_plan_driver',
     'excel_plot_config_sheet_name': 'ppt_plot_config',
@@ -16,8 +21,8 @@ plot_area_config = {
     'right': Cm(29.21+2.33),
     'track_height': Cm(0.5),
     'track_gap': Cm(0.2),
-    'min_start_date': "20210301",
-    'max_end_date': "20220623"
+    'min_start_date': date_parse("20210301"),
+    'max_end_date': date_parse("20220623")
 }
 
 format_config = {
@@ -42,8 +47,8 @@ plot_data = [
     {
         'id': 1,
         'type': 'bar',
-        'start_date': '20210310',
-        'end_date': '20210610',
+        'start_date': date_parse('20210301'),
+        'end_date': date_parse('20220623'),
         'track_num': 5,
         'bar_height_in_tracks': 2,
         'format_properties': 1,
@@ -51,8 +56,8 @@ plot_data = [
     {
         'id': 1,
         'type': 'bar',
-        'start_date': '20210410',
-        'end_date': '20210703',
+        'start_date': date_parse('20210410'),
+        'end_date': date_parse('20210703'),
         'track_num': 7,
         'bar_height_in_tracks': 1,
         'format_properties': 1,

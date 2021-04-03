@@ -140,8 +140,8 @@ class PlotDriver:
         self.right = plot_config['right']
         self.track_height = plot_config['track_height']
         self.track_gap = plot_config['track_gap']
-        self.min_start_date = self.string_date_to_date(plot_config['min_start_date'])
-        self.max_end_date = self.string_date_to_date(plot_config['max_end_date'])
+        self.min_start_date = plot_config['min_start_date']
+        self.max_end_date = plot_config['max_end_date']
 
         self.num_days_in_date_range = self.max_end_date.toordinal() - self.min_start_date.toordinal()
         self.plot_area_width = self.right - self.left
