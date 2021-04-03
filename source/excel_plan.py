@@ -25,9 +25,10 @@ class ExcelPlan:
 
             record = {
                 'id': row_id,
-                'type': 'bar',
+                'type': milestone_data['Activity Type'],
                 'start_date': start_date,
                 'end_date': end_date,
+                'swimlane': milestone_data['Swimlane'],
                 'track_num': milestone_data['Visual Track Number Within Swimlane'],
                 'bar_height_in_tracks': milestone_data['Visual Num Tracks To Span'],
                 'format_properties': 1

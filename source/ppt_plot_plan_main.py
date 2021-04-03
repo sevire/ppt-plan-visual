@@ -17,14 +17,14 @@ def main():
 
     if len(sys.argv) == 1:
         print("Running from IDE, using fixed arguments")
-        # plan_data_excel_file = "/Users/livestockinformation/PycharmProjects/ppt-plan-visual/source/tests/test_resources/input_files/excel_plan_file/ExcelPlanFile01.xls"
-        plan_data = plot_data
+        plan_data_excel_file = "/Users/livestockinformation/PycharmProjects/ppt-plan-visual/source/tests/test_resources/input_files/excel_plan_file/ExcelPlanFile01.xls"
+        # plan_data = plot_data
         plan_excel_config = excel_plan_config
         ppt_template_path = template_path
         plot_config = plot_area_config
         visual_format_config = format_config
-        visualiser = PlanVisualiser(plan_data, plot_config, visual_format_config, ppt_template_path)
-        # visualiser = PlanVisualiser.from_excel(plan_data_excel_file, plan_excel_config, ppt_template_path)
+        # visualiser = PlanVisualiser(plan_data, plot_config, visual_format_config, ppt_template_path)
+        visualiser = PlanVisualiser.from_excel(plan_data_excel_file, plan_excel_config, ppt_template_path)
     else:
         plan_data_excel_file = sys.argv[1]
         plan_excel_config = sys.argv[2]
