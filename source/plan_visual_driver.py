@@ -1,12 +1,11 @@
 import os
 from pptx import Presentation
 from pptx.enum.shapes import MSO_AUTO_SHAPE_TYPE
-from datetime import datetime
-import pandas as pd
-
 from pptx.util import Cm
 
-from source.tests.test_data.test_data_01 import plot_area_config, format_config
+from source.excel_plan import ExcelPlan
+from source.plot_driver import PlotDriver
+from source.tests.test_data.test_data_01 import plot_area_config
 from source.utilities import get_path_name_ext
 
 
@@ -76,7 +75,6 @@ class PlanVisualiser:
         entry_num = 0
         for record in self.plan_data:
             swimlane = record['swimlane']
-            track_num_low = record['track_num']
             track_num_high = record['track_num'] + record['bar_height_in_tracks'] - 1
             if swimlane not in swimlane_data:
                 # Adding record for this swimlane. Also remember ordering as is important later.
@@ -118,23 +116,20 @@ class PlanVisualiser:
 
         Then writes the one-slide deck to a different filename in the same folder.
 
-        :param template_path:
         :return:
         """
 
         for plotable_element in self.plan_data:
+            start = plotable_element['start_date']
+            end = plotable_element['end_date']
+            swimlane = plotable_element['swimlane']
+            track_num = plotable_element['track_num']
+            num_tracks = plotable_element['bar_height_in_tracks']
+            shape_format = plotable_element['format_properties']
             if plotable_element['type'] == 'bar':
-                start = plotable_element['start_date']
-                end = plotable_element['end_date']
-                swimlane = plotable_element['swimlane']
-                track_num = plotable_element['track_num']
-                num_tracks = plotable_element['bar_height_in_tracks']
-                shape_format = plotable_element['format_properties']
-
-                # start_date = self.plot_driver.string_date_to_date(start)
-                # end_date = self.plot_driver.string_date_to_date(end)
-
                 self.plot_bar(start, end, swimlane, track_num, num_tracks, shape_format)
+            elif plotable_element['type'] == 'milestone':
+                self.plot_milestone(start, swimlane, track_num, shape_format)
 
         self.prs.save(self.slides_out_path)
 
@@ -151,113 +146,16 @@ class PlanVisualiser:
             MSO_AUTO_SHAPE_TYPE.ROUNDED_RECTANGLE, left, top, right-left, bottom-top
         )
 
+    def plot_milestone(self, start_date, swimlane, track_number, format):
+        swimlane_start = self.swimlane_driver[swimlane]['start_track']
+        milestone_width = self.plot_config['milestone_width']
+        milestone_height = self.plot_config['track_height']
 
-class ExcelPlan:
-    def __init__(self, excel_driver_config, excel_plan_file):
-        self.excel_plan_sheet_name = excel_driver_config['excel_plan_sheet_name']
-        self.excel_plot_config_sheet_name = excel_driver_config['excel_plot_config_sheet_name']
-        self.excel_format_config_sheet_name = excel_driver_config['excel_format_config_sheet_name']
-        self.plan_start_row = excel_driver_config['plan_start_row']
+        left = self.plot_driver.date_to_x_coordinate(start_date) - milestone_width / 2
+        top = self.plot_driver.track_number_to_y_coordinate(swimlane_start + track_number - 1)
 
-        self.xl_pd_object = pd.ExcelFile(excel_plan_file)
-
-    def read_plan_data(self):
-        milestones = self.xl_pd_object.parse(self.excel_plan_sheet_name, skiprows=self.plan_start_row - 1)
-        milestones.set_index('Id', inplace=True)
-
-        plan_data = []
-
-        for row_id, milestone_data in milestones.iterrows():
-            # Will probably need to pre-process dates so readable by Python
-            start_date = milestone_data['Start Date']
-            end_date = milestone_data['End Date']
-
-            record = {
-                'id': row_id,
-                'type': 'bar',
-                'start_date': start_date,
-                'end_date': end_date,
-                'track_num': milestone_data['Visual Track Number Within Swimlane'],
-                'bar_height_in_tracks': milestone_data['Visual Num Tracks To Span'],
-                'format_properties': 1
-            }
-            plan_data.append(record)
-
-        return plan_data
-
-    def extract_plot_config_data(self):
-        # Hard code during development
-        return plot_area_config
-
-    def extract_format_config_data(self):
-        # Hard code during development
-        return format_config
+        shape = self.shapes.add_shape(
+            MSO_AUTO_SHAPE_TYPE.ISOSCELES_TRIANGLE, left, top, milestone_width, milestone_height
+        )
 
 
-class PlotDriver:
-    """
-    Used to translate plan type data into data which can be used to plot shapes.
-
-    Example - convert from a date to a horizontal position on the slide.
-
-    """
-    def __init__(self, plot_config):
-        self.top = plot_config['top']
-        self.left = plot_config['left']
-        self.bottom = plot_config['bottom']
-        self.right = plot_config['right']
-        self.track_height = plot_config['track_height']
-        self.track_gap = plot_config['track_gap']
-        self.min_start_date = plot_config['min_start_date']
-        self.max_end_date = plot_config['max_end_date']
-
-        self.num_days_in_date_range = self.max_end_date.toordinal() - self.min_start_date.toordinal()
-        self.plot_area_width = self.right - self.left
-
-    def date_to_x_coordinate(self, date):
-        """
-        This isn't quite as easy as it seems if we do it to pinpoint accuracy as the fact that
-        different months have different numbers of days will come into play.
-
-        For now just calculate based on how many days through the range the date is and
-        calculate distance as a proportion of total plot width.
-
-        In fact this approach would be completely accurate if we were using days as the unit
-        not months.
-
-        :param date:
-        :return:
-        """
-
-        num_days_from_min_date = date.toordinal() - self.min_start_date.toordinal()
-        proportion_of_plot_width = num_days_from_min_date / self.num_days_in_date_range
-        distance_from_left_of_plot_area = proportion_of_plot_width * self.plot_area_width
-        x_coord = self.left + distance_from_left_of_plot_area
-
-        return x_coord
-
-    def track_number_to_y_coordinate(self, track_num):
-        return self.top + (track_num - 1) * (self.track_height + self.track_gap)
-
-    def height_of_track(self, num_tracks):
-        return num_tracks * self.track_height + (num_tracks-1) * self.track_gap
-
-    def string_date_to_date(self, string_date):
-        return datetime.strptime(string_date, "%Y%m%d").date()
-
-
-class PlotableElement:
-    def __init__(self, element):
-        self.element = element
-
-    def plot_element(self, slide_object):
-        pass
-
-
-class Bar(PlotableElement):
-    def __init__(self, start_date, end_date, bar_height, format_properties, element):
-        super().__init__(element)
-        self.start_date = start_date
-        self.end_date = end_date
-        self.bar_height = bar_height
-        self.format_properties = format_properties

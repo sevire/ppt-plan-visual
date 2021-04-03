@@ -22,7 +22,8 @@ plot_area_config = {
     'track_height': Cm(0.5),
     'track_gap': Cm(0.2),
     'min_start_date': date_parse("20210301"),
-    'max_end_date': date_parse("20220623")
+    'max_end_date': date_parse("20220623"),
+    'milestone_width': Cm(0.5)
 }
 
 format_config = {
@@ -56,7 +57,7 @@ plot_data = [
     },
     {
         'id': 2,
-        'type': 'bar',
+        'type': 'milestone',
         'start_date': date_parse('20210410'),
         'end_date': date_parse('20210703'),
         'swimlane': 'Swimlane 1',
