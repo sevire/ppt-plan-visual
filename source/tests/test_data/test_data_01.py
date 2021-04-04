@@ -23,7 +23,8 @@ plot_area_config = {
     'track_gap': Cm(0.2),
     'min_start_date': date_parse("20210101"),
     'max_end_date': date_parse("20220331"),
-    'milestone_width': Cm(0.4)
+    'milestone_width': Cm(0.4),
+    'milestone_text_width': Cm(5)
 }
 
 format_config = {
@@ -35,7 +36,8 @@ format_config = {
             'font_size': Pt(8),
             'font_bold': True,
             'font_italic': False,
-            'font_colour_rgb': (50, 50, 200)
+            'font_colour_rgb': (50, 50, 200),
+            'text_align': 'right'
         },
         'Governance Milestones 2': {
             'fill_rgb': (192, 0, 0),
@@ -44,7 +46,8 @@ format_config = {
             'font_size': Pt(8),
             'font_bold': True,
             'font_italic': False,
-            'font_colour_rgb': (50, 50, 200)
+            'font_colour_rgb': (50, 50, 200),
+            'text_align': 'right'
         },
         'Activity Amber': {
             'fill_rgb': (255, 192, 0),
@@ -53,7 +56,8 @@ format_config = {
             'font_size': Pt(9),
             'font_bold': False,
             'font_italic': False,
-            'font_colour_rgb': (50, 50, 200)
+            'font_colour_rgb': (50, 50, 200),
+            'text_align': 'right'
         },
         'Activity Red': {
             'fill_rgb': (255, 0, 0),
@@ -62,7 +66,8 @@ format_config = {
             'font_size': Pt(9),
             'font_bold': False,
             'font_italic': False,
-            'font_colour_rgb': (50, 50, 200)
+            'font_colour_rgb': (50, 50, 200),
+            'text_align': 'left'
         },
         'Activity Green': {
             'fill_rgb': (146, 208, 80),
@@ -71,7 +76,8 @@ format_config = {
             'font_size': Pt(9),
             'font_bold': False,
             'font_italic': False,
-            'font_colour_rgb': (50, 50, 200)
+            'font_colour_rgb': (50, 50, 200),
+            'text_align': 'left'
         },
         'Activity Blue': {
             'fill_rgb': (0, 176, 240),
@@ -80,7 +86,8 @@ format_config = {
             'font_size': Pt(9),
             'font_bold': False,
             'font_italic': False,
-            'font_colour_rgb': (50, 50, 200)
+            'font_colour_rgb': (50, 50, 200),
+            'text_align': 'left'
         },
         'Red': {
             'fill_rgb': (199, 66, 33),
@@ -89,7 +96,8 @@ format_config = {
             'font_size': Pt(8),
             'font_bold': True,
             'font_italic': False,
-            'font_colour_rgb': (50, 50, 200)
+            'font_colour_rgb': (50, 50, 200),
+            'text_align': 'right'
         },
         'Amber': {
             'fill_rgb': (255, 101, 34),
@@ -98,7 +106,8 @@ format_config = {
             'font_size': Pt(8),
             'font_bold': False,
             'font_italic': True,
-            'font_colour_rgb': (150, 150, 50)
+            'font_colour_rgb': (150, 150, 50),
+            'text_align': 'left'
         },
     }
 }

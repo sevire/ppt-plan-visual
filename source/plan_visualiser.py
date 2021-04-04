@@ -2,8 +2,7 @@ import os
 from pptx import Presentation
 from pptx.dml.color import RGBColor
 from pptx.enum.shapes import MSO_AUTO_SHAPE_TYPE
-from pptx.util import Cm, Pt
-
+from pptx.enum.text import PP_PARAGRAPH_ALIGNMENT as PP_ALIGN
 from source.excel_plan import ExcelPlan
 from source.plot_driver import PlotDriver
 from source.tests.test_data.test_data_01 import plot_area_config
@@ -134,7 +133,10 @@ class PlanVisualiser:
                 # Plug shape dimensions back in to create identical text shape.
                 self.plot_text(description, *shape_details, shape_format)
             elif plotable_element['type'] == 'milestone':
-                self.plot_milestone(start, swimlane, track_num, shape_format)
+                left, top, milestone_width, milestone_height = self.plot_milestone(start, swimlane, track_num, shape_format)
+                milestone_text_width = self.plot_config['milestone_text_width']
+                milestone_text_left = left - milestone_text_width
+                self.plot_text(description, milestone_text_left, top, milestone_text_width, milestone_height, shape_format)
 
         self.prs.save(self.slides_out_path)
 
@@ -182,7 +184,7 @@ class PlanVisualiser:
         self.shape_line(shape, self.format_config['format_categories'][format_properties])
 
         # Return key properties to allow text shape to be generated
-        return left, top, milestone_height, milestone_height
+        return left, top, milestone_width, milestone_height
 
     def plot_text(self, text, left, top, width, height, format_properties):
         shape = self.shapes.add_shape(
@@ -218,6 +220,7 @@ class PlanVisualiser:
         """
         font = run.font
         paragraph.line_spacing = 0.8
+        paragraph.alignment = self.text_alignment(format_data['text_align'])
 
         font.name = 'Calibri'
         font.size = format_data['font_size']
@@ -228,3 +231,21 @@ class PlanVisualiser:
     def shape_line(self, shape, format_data):
         line = shape.line
         line.color.rgb = RGBColor(*format_data['line_rgb'])
+
+    def text_alignment(self, format_text_align):
+        """
+        Takes the alignment field from the element formatting data and converts to the appropriate value for the
+        pptx-python setting.
+
+        :param format_text_align:
+        :return:
+        """
+        if format_text_align == "left":
+            return PP_ALIGN.LEFT
+        elif format_text_align == "right":
+            return PP_ALIGN.RIGHT
+        elif format_text_align == "centre":
+            return PP_ALIGN.CENTER
+        else:
+            # Default to centre
+            return PP_ALIGN.CENTER

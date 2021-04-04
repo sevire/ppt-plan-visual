@@ -2,7 +2,7 @@ import logging
 import sys
 import time
 
-from source.plan_visual_driver import PlanVisualiser
+from source.plan_visualiser import PlanVisualiser
 from source.tests.test_data.test_data_01 import plot_data, format_config, template_path, excel_plan_config, \
     plot_area_config
 
