@@ -2,7 +2,7 @@ import os
 from pptx import Presentation
 from pptx.dml.color import RGBColor
 from pptx.enum.shapes import MSO_AUTO_SHAPE_TYPE
-from pptx.util import Cm
+from pptx.util import Cm, Pt
 
 from source.excel_plan import ExcelPlan
 from source.plot_driver import PlotDriver
@@ -102,7 +102,7 @@ class PlanVisualiser:
 
             swimlane, swimlane_entry = swimlane_entries[0]
             start_track = end_track + 1
-            end_track = end_track + swimlane_entry['highest_track_within_lane'] - 1
+            end_track = start_track + swimlane_entry['highest_track_within_lane'] - 1
             swimlane_plot_data[swimlane] = {
                 'start_track': start_track,
                 'end_track': end_track
@@ -123,12 +123,16 @@ class PlanVisualiser:
         for plotable_element in self.plan_data:
             start = plotable_element['start_date']
             end = plotable_element['end_date']
+            description = plotable_element['description']
             swimlane = plotable_element['swimlane']
             track_num = plotable_element['track_num']
             num_tracks = plotable_element['bar_height_in_tracks']
             shape_format = plotable_element['format_properties']
             if plotable_element['type'] == 'bar':
-                self.plot_bar(start, end, swimlane, track_num, num_tracks, shape_format)
+                shape_details = self.plot_bar(start, end, swimlane, track_num, num_tracks, shape_format)
+
+                # Plug shape dimensions back in to create identical text shape.
+                self.plot_text(description, *shape_details, shape_format)
             elif plotable_element['type'] == 'milestone':
                 self.plot_milestone(start, swimlane, track_num, shape_format)
 
@@ -139,12 +143,13 @@ class PlanVisualiser:
 
         left = self.plot_driver.date_to_x_coordinate(start_date)
         right = self.plot_driver.date_to_x_coordinate(end_date)
+        width = right - left
 
-        top = self.plot_driver.track_number_to_y_coordinate(swimlane_start + track_number - 1) - 1
+        top = self.plot_driver.track_number_to_y_coordinate(swimlane_start + track_number - 1)
         height = self.plot_driver.height_of_track(num_tracks)
 
         shape = self.shapes.add_shape(
-            MSO_AUTO_SHAPE_TYPE.ROUNDED_RECTANGLE, left, top, right-left, height
+            MSO_AUTO_SHAPE_TYPE.ROUNDED_RECTANGLE, left, top, width, height
         )
 
         properties = self.format_config['format_categories'][format_properties]
@@ -158,6 +163,9 @@ class PlanVisualiser:
         self.shape_fill(shape, properties)
         self.shape_line(shape, properties)
 
+        # Return key properties to allow text shape to be generated
+        return left, top, width, height
+
     def plot_milestone(self, start_date, swimlane, track_number, format_properties):
         swimlane_start = self.swimlane_driver[swimlane]['start_track']
         milestone_width = self.plot_config['milestone_width']
@@ -167,21 +175,56 @@ class PlanVisualiser:
         top = self.plot_driver.track_number_to_y_coordinate(swimlane_start + track_number - 1)
 
         shape = self.shapes.add_shape(
-            MSO_AUTO_SHAPE_TYPE.ISOSCELES_TRIANGLE, left, top, milestone_width, milestone_height
+            MSO_AUTO_SHAPE_TYPE.DIAMOND, left, top, milestone_width, milestone_height
         )
 
         self.shape_fill(shape, self.format_config['format_categories'][format_properties])
         self.shape_line(shape, self.format_config['format_categories'][format_properties])
 
-    def shape_fill(self, shape, format_properties):
+        # Return key properties to allow text shape to be generated
+        return left, top, milestone_height, milestone_height
+
+    def plot_text(self, text, left, top, width, height, format_properties):
+        shape = self.shapes.add_shape(
+            MSO_AUTO_SHAPE_TYPE.RECTANGLE, left, top, width, height
+        )
+        shape.fill.background()
+        shape.line.fill.background()
+
+        text_frame = shape.text_frame
+        text_frame.margin_left = 0
+        text_frame.margin_right = 0
+        text_frame.margin_top = 0
+        text_frame.margin_bottom = 0
+
+        paragraph = text_frame.paragraphs[0]
+        run = paragraph.add_run()
+        run.text = text
+
+        self.text_format(paragraph, run, self.format_config['format_categories'][format_properties])
+
+    def shape_fill(self, shape, format_data):
         fill = shape.fill
         fill.solid()
-        fill.fore_color.rgb = RGBColor(*format_properties['fill_rgb'])
+        fill.fore_color.rgb = RGBColor(*format_data['fill_rgb'])
 
-    def shape_line(self, shape, format_properties):
+    def text_format(self, paragraph, run, format_data):
+        """
+        Hard code text formatting (for now) as is likely to be constant.
+
+        :param paragraph:
+        :param run:
+        :return:
+        """
+        font = run.font
+        paragraph.line_spacing = 0.8
+
+        font.name = 'Calibri'
+        font.size = format_data['font_size']
+        font.bold = format_data['font_bold']
+        font.italic = format_data['font_italic']
+        font.color.rgb = RGBColor(*format_data['font_colour_rgb'])
+
+    def shape_line(self, shape, format_data):
         line = shape.line
-        line.color.rgb = RGBColor(*format_properties['line_rgb'])
-
-
-
-
+        line.color.rgb = RGBColor(*format_data['line_rgb'])

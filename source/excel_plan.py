@@ -25,6 +25,7 @@ class ExcelPlan:
 
             record = {
                 'id': row_id,
+                'description': milestone_data['Description'],
                 'type': milestone_data['Activity Type'],
                 'start_date': start_date,
                 'end_date': end_date,

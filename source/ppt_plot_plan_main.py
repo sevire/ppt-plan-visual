@@ -16,7 +16,7 @@ def main():
     # debug, and use hard-coded values for arguments
 
     # For testing, choose whether to use Excel import or test data
-    source = "Test Data"
+    source = "Excel"
 
     if len(sys.argv) == 1:
         print(f"Running from IDE, using fixed arguments, from {source}")
@@ -26,12 +26,14 @@ def main():
             plan_excel_config = excel_plan_config
             ppt_template_path = template_path
             visualiser = PlanVisualiser.from_excel(plan_data_excel_file, plan_excel_config, ppt_template_path)
-        else:
+        elif source == "Test Data":
             plan_data = plot_data
             ppt_template_path = template_path
             plot_config = plot_area_config
             visual_format_config = format_config
             visualiser = PlanVisualiser(plan_data, plot_config, visual_format_config, ppt_template_path)
+        else:
+            print(f"Invalid source specified - {source}")
     else:
         plan_data_excel_file = sys.argv[1]
         plan_excel_config = sys.argv[2]
