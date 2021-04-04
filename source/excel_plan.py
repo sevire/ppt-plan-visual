@@ -31,7 +31,7 @@ class ExcelPlan:
                 'swimlane': milestone_data['Swimlane'],
                 'track_num': milestone_data['Visual Track Number Within Swimlane'],
                 'bar_height_in_tracks': milestone_data['Visual Num Tracks To Span'],
-                'format_properties': 1
+                'format_properties': milestone_data['Format Name']
             }
             plan_data.append(record)
 

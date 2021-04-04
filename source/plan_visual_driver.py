@@ -1,5 +1,6 @@
 import os
 from pptx import Presentation
+from pptx.dml.color import RGBColor
 from pptx.enum.shapes import MSO_AUTO_SHAPE_TYPE
 from pptx.util import Cm
 
@@ -133,20 +134,31 @@ class PlanVisualiser:
 
         self.prs.save(self.slides_out_path)
 
-    def plot_bar(self, start_date, end_date, swimlane, track_number, num_tracks, format):
+    def plot_bar(self, start_date, end_date, swimlane, track_number, num_tracks, format_properties):
         swimlane_start = self.swimlane_driver[swimlane]['start_track']
 
         left = self.plot_driver.date_to_x_coordinate(start_date)
         right = self.plot_driver.date_to_x_coordinate(end_date)
 
         top = self.plot_driver.track_number_to_y_coordinate(swimlane_start + track_number - 1) - 1
-        bottom = top + self.plot_driver.height_of_track(num_tracks)
+        height = self.plot_driver.height_of_track(num_tracks)
 
         shape = self.shapes.add_shape(
-            MSO_AUTO_SHAPE_TYPE.ROUNDED_RECTANGLE, left, top, right-left, bottom-top
+            MSO_AUTO_SHAPE_TYPE.ROUNDED_RECTANGLE, left, top, right-left, height
         )
 
-    def plot_milestone(self, start_date, swimlane, track_number, format):
+        properties = self.format_config['format_categories'][format_properties]
+
+        # Adjust rounded corner radius
+        target_radius = properties['corner_radius']
+        adjustment_value = target_radius / height
+
+        shape.adjustments[0] = adjustment_value
+
+        self.shape_fill(shape, properties)
+        self.shape_line(shape, properties)
+
+    def plot_milestone(self, start_date, swimlane, track_number, format_properties):
         swimlane_start = self.swimlane_driver[swimlane]['start_track']
         milestone_width = self.plot_config['milestone_width']
         milestone_height = self.plot_config['track_height']
@@ -157,5 +169,19 @@ class PlanVisualiser:
         shape = self.shapes.add_shape(
             MSO_AUTO_SHAPE_TYPE.ISOSCELES_TRIANGLE, left, top, milestone_width, milestone_height
         )
+
+        self.shape_fill(shape, self.format_config['format_categories'][format_properties])
+        self.shape_line(shape, self.format_config['format_categories'][format_properties])
+
+    def shape_fill(self, shape, format_properties):
+        fill = shape.fill
+        fill.solid()
+        fill.fore_color.rgb = RGBColor(*format_properties['fill_rgb'])
+
+    def shape_line(self, shape, format_properties):
+        line = shape.line
+        line.color.rgb = RGBColor(*format_properties['line_rgb'])
+
+
 
 

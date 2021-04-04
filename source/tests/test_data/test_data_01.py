@@ -28,18 +28,15 @@ plot_area_config = {
 
 format_config = {
     'format_categories': {
-        'category-01': {
-            'bar_shape': 'rectangle',
-            'bar_fill_rgb': (3,3,3),
-            'bar_line_rgb': (4,4,4),
-            'bar_line_thickness': '???'
+        'Red': {
+            'fill_rgb': (199, 66, 33),
+            'line_rgb': (181, 60, 31),
+            'corner_radius': Cm(0.1)
         },
-        'category-02': {
-            'bar_shape': 'rounded_rectangle',
-            'corner_radius': '???',
-            'bar_fill_rgb': (3, 3, 3),
-            'bar_line_rgb': (4, 4, 4),
-            'bar_line_thickness': '???'
+        'Amber': {
+            'fill_rgb': (255, 101, 34),
+            'line_rgb': (207, 81, 29),
+            'corner_radius': Cm(0.2)
         },
     }
 }
@@ -53,7 +50,7 @@ plot_data = [
         'swimlane': 'Swimlane 1',
         'track_num': 1,
         'bar_height_in_tracks': 2,
-        'format_properties': 1,
+        'format_properties': "Red",
     },
     {
         'id': 2,
@@ -63,7 +60,7 @@ plot_data = [
         'swimlane': 'Swimlane 1',
         'track_num': 3,
         'bar_height_in_tracks': 1,
-        'format_properties': 1,
+        'format_properties': "Red",
     },
     {
         'id': 3,
@@ -73,7 +70,7 @@ plot_data = [
         'swimlane': 'Swimlane 1',
         'track_num': 4,
         'bar_height_in_tracks': 1,
-        'format_properties': 1,
+        'format_properties': "Amber",
     },
     {
         'id': 4,
@@ -83,7 +80,7 @@ plot_data = [
         'swimlane': 'Swimlane 1',
         'track_num': 5,
         'bar_height_in_tracks': 3,
-        'format_properties': 1,
+        'format_properties': "Amber",
     },
     {
         'id': 5,
@@ -93,7 +90,7 @@ plot_data = [
         'swimlane': 'Swimlane 1',
         'track_num': 5,
         'bar_height_in_tracks': 1,
-        'format_properties': 1,
+        'format_properties': "Amber",
     },
     {
         'id': 5,
@@ -103,7 +100,7 @@ plot_data = [
         'swimlane': 'Swimlane 1',
         'track_num': 6,
         'bar_height_in_tracks': 1,
-        'format_properties': 1,
+        'format_properties': "Red",
     },
     {
         'id': 5,
@@ -113,7 +110,7 @@ plot_data = [
         'swimlane': 'Swimlane 1',
         'track_num': 7,
         'bar_height_in_tracks': 1,
-        'format_properties': 1,
+        'format_properties': "Red",
     },
     {
         'id': 5,
@@ -123,7 +120,7 @@ plot_data = [
         'swimlane': 'Swimlane 1',
         'track_num': 11,
         'bar_height_in_tracks': 1,
-        'format_properties': 1,
+        'format_properties': "Amber",
     },
     {
         'id': 5,
@@ -133,7 +130,7 @@ plot_data = [
         'swimlane': 'Swimlane 1',
         'track_num': 12,
         'bar_height_in_tracks': 1,
-        'format_properties': 1,
+        'format_properties': "Amber",
     },
 ]
 
