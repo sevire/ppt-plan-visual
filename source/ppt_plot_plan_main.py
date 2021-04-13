@@ -4,7 +4,8 @@ import time
 
 from source.plan_visualiser import PlanVisualiser
 from source.tests.test_data.test_data_01 import plot_data, excel_plan_config_01, \
-    plot_area_config_ukview_01, format_config_01, excel_plan_config_02, plot_area_config_ukview_02, excel_plan_config_03
+    plot_area_config_ukview_01, format_config_01, excel_plan_config_02, plot_area_config_ukview_02, \
+    excel_plan_config_03, excel_plan_config_smartsheet
 
 # Configuration for when using Excel to drive.  Until we implement command line arguments.
 driver_data_set = {
@@ -21,15 +22,16 @@ driver_data_set = {
         'slide_level_config': format_config_01['slide_level_categories']['UKViewPOAP']
     },
     'ukview-from-smartsheet': {
-        'excel_plan_config ': excel_plan_config_01,
+        'excel_plan_config': excel_plan_config_smartsheet,
         'plot_area_config': plot_area_config_ukview_01,
         'format_config': format_config_01,
         'slide_level_config': format_config_01['slide_level_categories']['UKViewPOAP']
     }
 }
 
-data_set_to_use = driver_data_set['ukview-poap']
-excel_path = '/Users/livestockinformation/Livestock Information Ltd/Data - Data Insights/UK View/planning/UKViewPOAP-01-Driver.xls'
+data_set_to_use = driver_data_set['ukview-from-smartsheet']
+excel_path = '/Users/livestockinformation/Downloads/UK-View Plan.xls'
+# excel_path = '/Users/livestockinformation/Livestock Information Ltd/Data - Data Insights/UK View/planning/UKViewPOAP-01-Driver.xls'
 template_path = '/Users/livestockinformation/Livestock Information Ltd/Data - Data Insights/UK View/planning/UK-ViewPlanOnePager.pptx'
 
 
@@ -42,7 +44,7 @@ def main():
     # debug, and use hard-coded values for arguments
 
     # For testing, choose whether to use Excel import or test data
-    source = "Excel"
+    source = "ExcelSmartSheet"
 
     if len(sys.argv) == 1:
         print(f"Running from IDE, using fixed arguments, from {source}")
@@ -55,6 +57,14 @@ def main():
             format_config = data_set_to_use['format_config']
             slide_level_config = data_set_to_use['slide_level_config']
             visualiser = PlanVisualiser.from_excel(plan_data_excel_file, plot_area_config, format_config, plan_excel_config, template_path, slide_level_config)
+        elif source == "ExcelSmartSheet":
+            plan_data_excel_file = excel_path
+            plan_excel_config = data_set_to_use['excel_plan_config']
+            plot_area_config = data_set_to_use['plot_area_config']
+            format_config = data_set_to_use['format_config']
+            slide_level_config = data_set_to_use['slide_level_config']
+            visualiser = PlanVisualiser.from_excelsmartsheet(plan_data_excel_file, plot_area_config, format_config, plan_excel_config, template_path, slide_level_config)
+
         elif source == "Test Data":
             plan_data = plot_data
             plot_config = driver_data_set['ukview-jeremy_ppt']['plot_area_config']

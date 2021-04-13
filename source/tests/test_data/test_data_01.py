@@ -27,6 +27,13 @@ excel_plan_config_03 = {  # New from scratch slide for slide deck
     'excel_format_config_sheet_name': 'ppt_format_config',
     'plan_start_row': 2
 }
+
+excel_plan_config_smartsheet = {  # New from scratch slide for slide deck
+    'excel_plan_sheet_name': 'UK-View Plan',
+    'excel_plot_config_sheet_name': 'ppt_plot_config',
+    'excel_format_config_sheet_name': 'ppt_format_config',
+    'plan_start_row': 1
+}
 plot_area_config_ukview_01 = {  # Version of Jeremy's original PPT plan
     'top': Cm(3.21),
     'left': Cm(0.46),

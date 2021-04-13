@@ -4,7 +4,7 @@ from pptx.dml.color import RGBColor
 from pptx.enum.shapes import MSO_AUTO_SHAPE_TYPE
 from pptx.enum.text import PP_PARAGRAPH_ALIGNMENT as PP_ALIGN
 from pptx.enum.text import MSO_VERTICAL_ANCHOR as MSO_ANCHOR
-from source.excel_plan import ExcelPlan
+from source.excel_plan import ExcelPlan, ExcelSmartsheetPlan
 from source.plot_driver import PlotDriver
 from source.utilities import get_path_name_ext
 
@@ -48,6 +48,16 @@ class PlanVisualiser:
     @classmethod
     def from_excel(cls, plan_data_excel_path, plot_area_config, format_config, excel_driver_config, template_path, slide_level_config):
         excel_manager = ExcelPlan(excel_driver_config, plan_data_excel_path)
+
+        extracted_plot_config = plot_area_config
+        extracted_format_config = format_config
+        extracted_plan_data = excel_manager.read_plan_data()
+
+        return PlanVisualiser(extracted_plan_data, extracted_plot_config, extracted_format_config, template_path, slide_level_config)
+
+    @classmethod
+    def from_excelsmartsheet(cls, plan_data_excel_path, plot_area_config, format_config, excel_driver_config, template_path, slide_level_config):
+        excel_manager = ExcelSmartsheetPlan(excel_driver_config, plan_data_excel_path)
 
         extracted_plot_config = plot_area_config
         extracted_format_config = format_config
