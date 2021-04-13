@@ -36,7 +36,10 @@ class PlotDriver:
         :return:
         """
 
-        num_days_from_min_date = date.toordinal() - self.min_start_date.toordinal()
+        try:
+            num_days_from_min_date = date.toordinal() - self.min_start_date.toordinal()
+        except:
+            pass
         proportion_of_plot_width = num_days_from_min_date / self.num_days_in_date_range
         distance_from_left_of_plot_area = proportion_of_plot_width * self.plot_area_width
         x_coord = self.left + distance_from_left_of_plot_area

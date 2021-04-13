@@ -1,7 +1,5 @@
 import pandas as pd
 
-from source.tests.test_data.test_data_01 import plot_area_config, format_config
-
 
 class ExcelPlan:
     def __init__(self, excel_driver_config, excel_plan_file):

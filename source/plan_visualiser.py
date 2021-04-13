@@ -3,9 +3,9 @@ from pptx import Presentation
 from pptx.dml.color import RGBColor
 from pptx.enum.shapes import MSO_AUTO_SHAPE_TYPE
 from pptx.enum.text import PP_PARAGRAPH_ALIGNMENT as PP_ALIGN
+from pptx.enum.text import MSO_VERTICAL_ANCHOR as MSO_ANCHOR
 from source.excel_plan import ExcelPlan
 from source.plot_driver import PlotDriver
-from source.tests.test_data.test_data_01 import plot_area_config
 from source.utilities import get_path_name_ext
 
 
@@ -19,7 +19,7 @@ class PlanVisualiser:
     :param plan_data:
     """
 
-    def __init__(self, plan_data, plot_config, format_config, template_path):
+    def __init__(self, plan_data, plot_config, format_config, template_path, slide_level_config):
         # The actual plan data with activities and milestones, start/finish dates etc.
         self.plan_data = plan_data
 
@@ -28,6 +28,9 @@ class PlanVisualiser:
 
         # Data with pre-determined formatting properties to apply to elements.
         self.format_config = format_config
+
+        # Config to drive slide level objects such as the swimlane rectangle shapes as background.
+        self.slide_level_config = slide_level_config
 
         self.template = template_path
 
@@ -38,19 +41,19 @@ class PlanVisualiser:
         visual_slide = self.prs.slides[0]  # Assume there is one slide and that's where we will place the visual
 
         self.shapes = visual_slide.shapes
-        self.plot_driver = PlotDriver(plot_area_config)
+        self.plot_driver = PlotDriver(plot_config)
 
-        self.swimlane_driver = self.extract_swimlane_data()
+        self.swimlane_data = self.extract_swimlane_data()
 
     @classmethod
-    def from_excel(cls, plan_data_excel_path, excel_driver_config, template_path):
+    def from_excel(cls, plan_data_excel_path, plot_area_config, format_config, excel_driver_config, template_path, slide_level_config):
         excel_manager = ExcelPlan(excel_driver_config, plan_data_excel_path)
 
-        extracted_plot_config = excel_manager.extract_plot_config_data()
-        extracted_format_config = excel_manager.extract_format_config_data()
+        extracted_plot_config = plot_area_config
+        extracted_format_config = format_config
         extracted_plan_data = excel_manager.read_plan_data()
 
-        return PlanVisualiser(extracted_plan_data, extracted_plot_config, extracted_format_config, template_path)
+        return PlanVisualiser(extracted_plan_data, extracted_plot_config, extracted_format_config, template_path, slide_level_config)
 
     def extract_swimlane_data(self):
         """
@@ -119,6 +122,7 @@ class PlanVisualiser:
         :return:
         """
 
+        self.plot_swimlanes(self.slide_level_config)
         for plotable_element in self.plan_data:
             start = plotable_element['start_date']
             end = plotable_element['end_date']
@@ -126,22 +130,19 @@ class PlanVisualiser:
             swimlane = plotable_element['swimlane']
             track_num = plotable_element['track_num']
             num_tracks = plotable_element['bar_height_in_tracks']
-            shape_format = plotable_element['format_properties']
+            shape_format_name = plotable_element['format_properties']
+            format_data = self.format_config['format_categories'][shape_format_name]
             if plotable_element['type'] == 'bar':
-                shape_details = self.plot_bar(start, end, swimlane, track_num, num_tracks, shape_format)
+                self.plot_bar(description, start, end, swimlane, track_num, num_tracks, format_data)
 
-                # Plug shape dimensions back in to create identical text shape.
-                self.plot_text(description, *shape_details, shape_format)
             elif plotable_element['type'] == 'milestone':
-                left, top, milestone_width, milestone_height = self.plot_milestone(start, swimlane, track_num, shape_format)
-                milestone_text_width = self.plot_config['milestone_text_width']
-                milestone_text_left = left - milestone_text_width
-                self.plot_text(description, milestone_text_left, top, milestone_text_width, milestone_height, shape_format)
+                self.plot_milestone(description, start, swimlane, track_num, format_data)
 
         self.prs.save(self.slides_out_path)
 
-    def plot_bar(self, start_date, end_date, swimlane, track_number, num_tracks, format_properties):
-        swimlane_start = self.swimlane_driver[swimlane]['start_track']
+    def plot_bar(self, activity_description, start_date, end_date, swimlane, track_number, num_tracks,
+                 properties):
+        swimlane_start = self.swimlane_data[swimlane]['start_track']
 
         left = self.plot_driver.date_to_x_coordinate(start_date)
         right = self.plot_driver.date_to_x_coordinate(end_date)
@@ -154,8 +155,6 @@ class PlanVisualiser:
             MSO_AUTO_SHAPE_TYPE.ROUNDED_RECTANGLE, left, top, width, height
         )
 
-        properties = self.format_config['format_categories'][format_properties]
-
         # Adjust rounded corner radius
         target_radius = properties['corner_radius']
         adjustment_value = target_radius / height
@@ -165,11 +164,25 @@ class PlanVisualiser:
         self.shape_fill(shape, properties)
         self.shape_line(shape, properties)
 
-        # Return key properties to allow text shape to be generated
-        return left, top, width, height
+        # Work out what to do about the text label for the bar.
+        text_position = properties['text_position']
 
-    def plot_milestone(self, start_date, swimlane, track_number, format_properties):
-        swimlane_start = self.swimlane_driver[swimlane]['start_track']
+        if text_position == 'left':
+            # Text to the right, with a standard width.
+            text_left = left - self.plot_config['activity_text_width']
+            text_width = self.plot_config['activity_text_width']
+            self.plot_text(activity_description, text_left, top, text_width, height, properties)
+        elif text_position == 'right':
+            # Text to the left, with a standard width.
+            text_left = left + width
+            text_width = self.plot_config['activity_text_width']
+            self.plot_text(activity_description, text_left, top, text_width, height, properties)
+        else:
+            # Standard positioning, text will align exactly with the shape
+            self.plot_text(activity_description, left, top, width, height, properties)
+
+    def plot_milestone(self, milestone_description, start_date, swimlane, track_number, properties):
+        swimlane_start = self.swimlane_data[swimlane]['start_track']
         milestone_width = self.plot_config['milestone_width']
         milestone_height = self.plot_config['track_height']
 
@@ -180,30 +193,43 @@ class PlanVisualiser:
             MSO_AUTO_SHAPE_TYPE.DIAMOND, left, top, milestone_width, milestone_height
         )
 
-        self.shape_fill(shape, self.format_config['format_categories'][format_properties])
-        self.shape_line(shape, self.format_config['format_categories'][format_properties])
+        self.shape_fill(shape, properties)
+        self.shape_line(shape, properties)
 
-        # Return key properties to allow text shape to be generated
-        return left, top, milestone_width, milestone_height
+        milestone_text_width = self.plot_config['milestone_text_width']
+        milestone_text_left = left - milestone_text_width
+        self.plot_text(milestone_description, milestone_text_left, top, milestone_text_width, milestone_height, properties)
 
-    def plot_text(self, text, left, top, width, height, format_properties):
-        shape = self.shapes.add_shape(
-            MSO_AUTO_SHAPE_TYPE.RECTANGLE, left, top, width, height
-        )
-        shape.fill.background()
-        shape.line.fill.background()
-
+    def add_text_to_shape(self, shape, text, format_data):
         text_frame = shape.text_frame
         text_frame.margin_left = 0
         text_frame.margin_right = 0
         text_frame.margin_top = 0
         text_frame.margin_bottom = 0
 
+        vertical = format_data['text_vertical_align']
+        if vertical == "top":
+            text_frame.vertical_anchor = MSO_ANCHOR.TOP
+        elif vertical == "bottom":
+            text_frame.vertical_anchor = MSO_ANCHOR.BOTTOM
+        else:
+            text_frame.vertical_anchor = MSO_ANCHOR.MIDDLE
+
         paragraph = text_frame.paragraphs[0]
         run = paragraph.add_run()
         run.text = text
 
-        self.text_format(paragraph, run, self.format_config['format_categories'][format_properties])
+        self.text_format(paragraph, run, format_data)
+
+    def plot_text(self, text, left, top, width, height, format_data):
+
+        shape = self.shapes.add_shape(
+            MSO_AUTO_SHAPE_TYPE.RECTANGLE, left, top, width, height
+        )
+        shape.fill.background()
+        shape.line.fill.background()
+
+        self.add_text_to_shape(shape, text, format_data)
 
     def shape_fill(self, shape, format_data):
         fill = shape.fill
@@ -249,3 +275,44 @@ class PlanVisualiser:
         else:
             # Default to centre
             return PP_ALIGN.CENTER
+
+    def plot_swimlanes(self, format_data):
+        """
+        plot a background rectangle for each swimline with the width of the plot area, the height of the swimlane, and
+        positioned to coincide with the tracks within the swimlane.
+
+        Also alternate colours for each swimlane
+
+        :return:
+        """
+
+        for row, swimlane in enumerate(self.swimlane_data):
+            row_number = row + 1
+
+            start_track = self.swimlane_data[swimlane]['start_track']
+            end_track = self.swimlane_data[swimlane]['end_track']
+            top = self.plot_driver.track_number_to_y_coordinate(start_track)
+
+            # Need to adjust to start between track end and track start, unless this is the first row
+            if row_number > 1:
+                top -= (self.plot_config['track_gap'] / 2)
+            bottom = self.plot_driver.track_number_to_y_coordinate(end_track) + self.plot_config['track_height'] + (self.plot_config['track_gap'] / 2)
+            left = self.plot_config['left']
+            width = self.plot_config['right'] - self.plot_config['left']
+            height = bottom - top
+
+            shape = self.shapes.add_shape(
+                MSO_AUTO_SHAPE_TYPE.RECTANGLE, left, top, width, height
+            )
+
+            # For the purposes of this decision, the first row is 1 (odd)
+            if row_number % 2 == 0:
+                format_info = format_data['swimlane_format_even']
+            else:
+                format_info = format_data['swimlane_format_odd']
+
+            self.shape_fill(shape, format_info)
+            self.shape_line(shape, format_info)
+            self.add_text_to_shape(shape, swimlane, format_info)
+
+
