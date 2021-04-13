@@ -109,7 +109,7 @@ format_config_01 = {
             'text_align': 'right',
             'text_vertical_align': 'centre'
 },
-        'Governance Milestones 1(right)': {
+        'Governance Milestones 1 (right)': {
             'fill_rgb': (32, 56, 100),
             'line_rgb': (32, 56, 100),
             'corner_radius': Cm(0.1),
@@ -142,7 +142,7 @@ format_config_01 = {
             'font_italic': False,
             'font_colour_rgb': (50, 50, 200),
             'text_position': 'right',
-            'text_align': 'right',
+            'text_align': 'left',
             'text_vertical_align': 'centre'
         },
         'Activity Amber': {
@@ -169,6 +169,18 @@ format_config_01 = {
             'text_align': 'right',
             'text_vertical_align': 'centre'
         },
+        'Activity Amber (right)': {
+            'fill_rgb': (255, 192, 0),
+            'line_rgb': (255, 192, 0),
+            'corner_radius': Cm(0.1),
+            'font_size': Pt(9),
+            'font_bold': False,
+            'font_italic': False,
+            'font_colour_rgb': (50, 50, 200),
+            'text_position': 'right',
+            'text_align': 'left',
+            'text_vertical_align': 'centre'
+        },
         'Activity Amber 2-Track': {
             'fill_rgb': (255, 192, 0),
             'line_rgb': (255, 192, 0),
@@ -193,6 +205,18 @@ format_config_01 = {
             'text_align': 'left',
             'text_vertical_align': 'centre'
         },
+        'Activity Red (left)': {
+            'fill_rgb': (255, 0, 0),
+            'line_rgb': (255, 0, 0),
+            'corner_radius': Cm(0.1),
+            'font_size': Pt(9),
+            'font_bold': False,
+            'font_italic': False,
+            'font_colour_rgb': (50, 50, 200),
+            'text_position': 'shape',  # Values left, right or shape.  Shape only applies to bar and means align to shape
+            'text_align': 'right',
+            'text_vertical_align': 'centre'
+        },
         'Activity Green': {
             'fill_rgb': (146, 208, 80),
             'line_rgb': (146, 208, 80),
@@ -201,7 +225,31 @@ format_config_01 = {
             'font_bold': False,
             'font_italic': False,
             'font_colour_rgb': (50, 50, 200),
+            'text_position': 'shape',
+            'text_align': 'shape',
+            'text_vertical_align': 'centre'
+        },
+        'Activity Green (left)': {
+            'fill_rgb': (146, 208, 80),
+            'line_rgb': (146, 208, 80),
+            'corner_radius': Cm(0.1),
+            'font_size': Pt(9),
+            'font_bold': False,
+            'font_italic': False,
+            'font_colour_rgb': (50, 50, 200),
             'text_position': 'left',
+            'text_align': 'right',
+            'text_vertical_align': 'centre'
+        },
+        'Activity Green (right)': {
+            'fill_rgb': (146, 208, 80),
+            'line_rgb': (146, 208, 80),
+            'corner_radius': Cm(0.1),
+            'font_size': Pt(9),
+            'font_bold': False,
+            'font_italic': False,
+            'font_colour_rgb': (50, 50, 200),
+            'text_position': 'right',
             'text_align': 'left',
             'text_vertical_align': 'centre'
         },
@@ -213,32 +261,20 @@ format_config_01 = {
             'font_bold': False,
             'font_italic': False,
             'font_colour_rgb': (50, 50, 200),
-            'text_position': 'left',
+            'text_position': 'shape',
             'text_align': 'left',
             'text_vertical_align': 'centre'
         },
-        'Red': {
-            'fill_rgb': (199, 66, 33),
-            'line_rgb': (181, 60, 31),
+        'Activity Blue (left)': {
+            'fill_rgb': (0, 176, 240),
+            'line_rgb': (0, 176, 240),
             'corner_radius': Cm(0.1),
-            'font_size': Pt(8),
-            'font_bold': True,
+            'font_size': Pt(9),
+            'font_bold': False,
             'font_italic': False,
             'font_colour_rgb': (50, 50, 200),
             'text_position': 'left',
             'text_align': 'right',
-            'text_vertical_align': 'centre'
-        },
-        'Amber': {
-            'fill_rgb': (255, 101, 34),
-            'line_rgb': (207, 81, 29),
-            'corner_radius': Cm(0.1),
-            'font_size': Pt(8),
-            'font_bold': False,
-            'font_italic': True,
-            'font_colour_rgb': (150, 150, 50),
-            'text_position': 'left',
-            'text_align': 'left',
             'text_vertical_align': 'centre'
         },
     }

@@ -167,15 +167,18 @@ class PlanVisualiser:
         # Work out what to do about the text label for the bar.
         text_position = properties['text_position']
 
+        activity_text_width = self.plot_config['activity_text_width']
         if text_position == 'left':
-            # Text to the right, with a standard width.
-            text_left = left - self.plot_config['activity_text_width']
-            text_width = self.plot_config['activity_text_width']
+            # Extend the text to the left so that if overflows to the left of the shape.
+            adjust_width = max(width, activity_text_width)
+            text_left = left + width - adjust_width
+            text_width = activity_text_width
             self.plot_text(activity_description, text_left, top, text_width, height, properties)
         elif text_position == 'right':
-            # Text to the left, with a standard width.
-            text_left = left + width
-            text_width = self.plot_config['activity_text_width']
+            # Extend text to the right so that it overflows to the right of the shape
+            adjust_width = max(width, activity_text_width)
+            text_left = left
+            text_width = adjust_width
             self.plot_text(activity_description, text_left, top, text_width, height, properties)
         else:
             # Standard positioning, text will align exactly with the shape
@@ -196,9 +199,17 @@ class PlanVisualiser:
         self.shape_fill(shape, properties)
         self.shape_line(shape, properties)
 
-        milestone_text_width = self.plot_config['milestone_text_width']
-        milestone_text_left = left - milestone_text_width
-        self.plot_text(milestone_description, milestone_text_left, top, milestone_text_width, milestone_height, properties)
+        # Work out what to do about the text label for the bar.
+        text_position = properties['text_position']
+
+        if text_position == "right":
+            milestone_text_width = self.plot_config['milestone_text_width']
+            milestone_text_left = left + milestone_width
+            self.plot_text(milestone_description, milestone_text_left, top, milestone_text_width, milestone_height, properties)
+        else:
+            milestone_text_width = self.plot_config['milestone_text_width']
+            milestone_text_left = left - milestone_text_width
+            self.plot_text(milestone_description, milestone_text_left, top, milestone_text_width, milestone_height, properties)
 
     def add_text_to_shape(self, shape, text, format_data):
         text_frame = shape.text_frame
