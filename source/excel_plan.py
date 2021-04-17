@@ -50,10 +50,12 @@ class ExcelSmartsheetPlan:
         self.excel_format_config_sheet_name = excel_driver_config['excel_format_config_sheet_name']
         self.plan_start_row = excel_driver_config['plan_start_row']
 
-        self.xl_pd_object = pd.ExcelFile(excel_plan_file)
+        self.xl_pd_object = pd.read_excel(excel_plan_file, engine='openpyxl')
+        # self.xl_pd_object = pd.ExcelFile(excel_plan_file)
 
     def read_plan_data(self):
-        milestones = self.xl_pd_object.parse(self.excel_plan_sheet_name, skiprows=self.plan_start_row - 1)
+        milestones = self.xl_pd_object
+        # milestones = self.xl_pd_object.parse(self.excel_plan_sheet_name, skiprows=self.plan_start_row - 1)
         # milestones.set_index('Id', inplace=True)
 
         plan_data = []

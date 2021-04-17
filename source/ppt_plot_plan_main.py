@@ -1,3 +1,5 @@
+
+
 import logging
 import sys
 import time
@@ -23,14 +25,14 @@ driver_data_set = {
     },
     'ukview-from-smartsheet': {
         'excel_plan_config': excel_plan_config_smartsheet,
-        'plot_area_config': plot_area_config_ukview_01,
+        'plot_area_config': plot_area_config_ukview_02,
         'format_config': format_config_01,
-        'slide_level_config': format_config_01['slide_level_categories']['UKViewPOAP']
+        'slide_level_config': format_config_01['slide_level_categories']['UKViewPOAP'],
     }
 }
 
 data_set_to_use = driver_data_set['ukview-from-smartsheet']
-excel_path = '/Users/livestockinformation/Downloads/UK-View Plan.xls'
+excel_path = '/Users/livestockinformation/Downloads/UK-View Plan.xlsx'
 # excel_path = '/Users/livestockinformation/Livestock Information Ltd/Data - Data Insights/UK View/planning/UKViewPOAP-01-Driver.xls'
 template_path = '/Users/livestockinformation/Livestock Information Ltd/Data - Data Insights/UK View/planning/UK-ViewPlanOnePager.pptx'
 

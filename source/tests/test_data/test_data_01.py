@@ -34,6 +34,7 @@ excel_plan_config_smartsheet = {  # New from scratch slide for slide deck
     'excel_format_config_sheet_name': 'ppt_format_config',
     'plan_start_row': 1
 }
+
 plot_area_config_ukview_01 = {  # Version of Jeremy's original PPT plan
     'top': Cm(3.21),
     'left': Cm(0.46),
@@ -79,25 +80,33 @@ plot_area_config_ukview_03 = {  # PPT view of smartsheets plan
 format_config_01 = {
     'slide_level_categories': {
         'UKViewPOAP': {
+            'swimlanes': [
+                'Governance',
+                'LI Data Team',
+                'UK View Delivery',
+                'APHA',
+                'Devolved Authorities',
+                'Technical Delivery'
+            ],
             'swimlane_format_odd':
                 {
-                    'fill_rgb': (228, 236, 172),
-                    'line_rgb': (228, 236, 172),
+                    'fill_rgb': (242, 242, 242),
+                    'line_rgb': (242, 242, 242),
                     'font_size': Pt(14),
                     'font_bold': True,
                     'font_italic': False,
-                    'font_colour_rgb': (93, 104, 24),
+                    'font_colour_rgb': (166, 166, 166),
                     'text_align': 'left',
                     'text_vertical_align': 'top'
                 },
             'swimlane_format_even':
                 {
-                    'fill_rgb': (214, 227, 130),
-                    'line_rgb': (214, 227, 130),
+                    'fill_rgb': (255, 255, 255),
+                    'line_rgb': (255, 255, 255),
                     'font_size': Pt(14),
                     'font_bold': True,
                     'font_italic': False,
-                    'font_colour_rgb': (93, 104, 24),
+                    'font_colour_rgb': (166, 166, 166),
                     'text_align': 'left',
                     'text_vertical_align': 'top'
 }
@@ -114,7 +123,7 @@ format_config_01 = {
             'font_colour_rgb': (50, 50, 200),
             'text_position': 'left',  # Values left, right or shape.  Shape only applies to bar and means align to shape
             'text_align': 'right',
-            'text_vertical_align': 'centre'
+            'text_vertical_align': 'middle'
 },
         'Governance Milestones 1 (right)': {
             'fill_rgb': (32, 56, 100),
@@ -126,7 +135,7 @@ format_config_01 = {
             'font_colour_rgb': (50, 50, 200),
             'text_position': 'right',  # Values left, right or shape.  Shape only applies to bar and means align to shape
             'text_align': 'right',
-            'text_vertical_align': 'centre'
+            'text_vertical_align': 'middle'
         },
         'Governance Milestones 2': {
             'fill_rgb': (192, 0, 0),
@@ -138,7 +147,7 @@ format_config_01 = {
             'font_colour_rgb': (50, 50, 200),
             'text_position': 'left',
             'text_align': 'right',
-            'text_vertical_align': 'centre'
+            'text_vertical_align': 'middle'
         },
         'Governance Milestones 2 (right)': {
             'fill_rgb': (192, 0, 0),
@@ -150,7 +159,31 @@ format_config_01 = {
             'font_colour_rgb': (50, 50, 200),
             'text_position': 'right',
             'text_align': 'left',
-            'text_vertical_align': 'centre'
+            'text_vertical_align': 'middle'
+        },
+        'Governance Milestones 3': {
+            'fill_rgb': (255, 139, 12),
+            'line_rgb': (255, 139, 12),
+            'corner_radius': Cm(0.1),
+            'font_size': Pt(8),
+            'font_bold': True,
+            'font_italic': False,
+            'font_colour_rgb': (50, 50, 200),
+            'text_position': 'left',
+            'text_align': 'right',
+            'text_vertical_align': 'middle'
+        },
+        'Governance Milestones 3 (right)': {
+            'fill_rgb': (255, 139, 12),
+            'line_rgb': (255, 139, 12),
+            'corner_radius': Cm(0.1),
+            'font_size': Pt(8),
+            'font_bold': True,
+            'font_italic': False,
+            'font_colour_rgb': (50, 50, 200),
+            'text_position': 'right',
+            'text_align': 'left',
+            'text_vertical_align': 'middle'
         },
         'Activity Amber': {
             'fill_rgb': (255, 192, 0),
@@ -162,7 +195,7 @@ format_config_01 = {
             'font_colour_rgb': (50, 50, 200),
             'text_position': 'shape',
             'text_align': 'centre',
-            'text_vertical_align': 'centre'
+            'text_vertical_align': 'middle'
         },
         'Activity Amber (left)': {
             'fill_rgb': (255, 192, 0),
@@ -174,7 +207,7 @@ format_config_01 = {
             'font_colour_rgb': (50, 50, 200),
             'text_position': 'left',
             'text_align': 'right',
-            'text_vertical_align': 'centre'
+            'text_vertical_align': 'middle'
         },
         'Activity Amber (right)': {
             'fill_rgb': (255, 192, 0),
@@ -186,7 +219,7 @@ format_config_01 = {
             'font_colour_rgb': (50, 50, 200),
             'text_position': 'right',
             'text_align': 'left',
-            'text_vertical_align': 'centre'
+            'text_vertical_align': 'middle'
         },
         'Activity Amber 2-Track': {
             'fill_rgb': (255, 192, 0),
@@ -198,7 +231,7 @@ format_config_01 = {
             'font_colour_rgb': (50, 50, 200),
             'text_position': 'left',
             'text_align': 'centre',
-            'text_vertical_align': 'centre'
+            'text_vertical_align': 'middle'
 },
         'Activity Red': {
             'fill_rgb': (255, 0, 0),
@@ -210,7 +243,7 @@ format_config_01 = {
             'font_colour_rgb': (50, 50, 200),
             'text_position': 'shape',  # Values left, right or shape.  Shape only applies to bar and means align to shape
             'text_align': 'left',
-            'text_vertical_align': 'centre'
+            'text_vertical_align': 'middle'
         },
         'Activity Red (left)': {
             'fill_rgb': (255, 0, 0),
@@ -222,7 +255,7 @@ format_config_01 = {
             'font_colour_rgb': (50, 50, 200),
             'text_position': 'shape',  # Values left, right or shape.  Shape only applies to bar and means align to shape
             'text_align': 'right',
-            'text_vertical_align': 'centre'
+            'text_vertical_align': 'middle'
         },
         'Activity Green': {
             'fill_rgb': (146, 208, 80),
@@ -234,7 +267,7 @@ format_config_01 = {
             'font_colour_rgb': (50, 50, 200),
             'text_position': 'shape',
             'text_align': 'shape',
-            'text_vertical_align': 'centre'
+            'text_vertical_align': 'middle'
         },
         'Activity Green (left)': {
             'fill_rgb': (146, 208, 80),
@@ -246,7 +279,7 @@ format_config_01 = {
             'font_colour_rgb': (50, 50, 200),
             'text_position': 'left',
             'text_align': 'right',
-            'text_vertical_align': 'centre'
+            'text_vertical_align': 'middle'
         },
         'Activity Green (right)': {
             'fill_rgb': (146, 208, 80),
@@ -258,7 +291,7 @@ format_config_01 = {
             'font_colour_rgb': (50, 50, 200),
             'text_position': 'right',
             'text_align': 'left',
-            'text_vertical_align': 'centre'
+            'text_vertical_align': 'middle'
         },
         'Activity Blue': {
             'fill_rgb': (0, 176, 240),
@@ -270,7 +303,7 @@ format_config_01 = {
             'font_colour_rgb': (50, 50, 200),
             'text_position': 'shape',
             'text_align': 'left',
-            'text_vertical_align': 'centre'
+            'text_vertical_align': 'middle'
         },
         'Activity Blue (left)': {
             'fill_rgb': (0, 176, 240),
@@ -282,7 +315,7 @@ format_config_01 = {
             'font_colour_rgb': (50, 50, 200),
             'text_position': 'left',
             'text_align': 'right',
-            'text_vertical_align': 'centre'
+            'text_vertical_align': 'middle'
         },
     }
 }

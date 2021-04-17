@@ -6,7 +6,7 @@ from pptx.enum.text import PP_PARAGRAPH_ALIGNMENT as PP_ALIGN
 from pptx.enum.text import MSO_VERTICAL_ANCHOR as MSO_ANCHOR
 from source.excel_plan import ExcelPlan, ExcelSmartsheetPlan
 from source.plot_driver import PlotDriver
-from source.utilities import get_path_name_ext
+from source.utilities import get_path_name_ext, SwimlaneManager
 
 
 class PlanVisualiser:
@@ -85,18 +85,17 @@ class PlanVisualiser:
         """
 
         swimlane_data = {}
-        entry_num = 0
+        swimlane_manager = SwimlaneManager(self.slide_level_config['swimlanes'])
         for record in self.plan_data:
             swimlane = record['swimlane']
             track_num_high = record['track_num'] + record['bar_height_in_tracks'] - 1
             if swimlane not in swimlane_data:
                 # Adding record for this swimlane. Also remember ordering as is important later.
                 swimlane_record = {
-                    'swimlane_order': entry_num + 1,
+                    'swimlane_number': swimlane_manager.get_swimlane_number(swimlane),
                     'highest_track_within_lane': track_num_high
                 }
                 swimlane_data[swimlane] = swimlane_record
-                entry_num += 1
             else:
                 swimlane_record = swimlane_data[swimlane]
                 if track_num_high > swimlane_record['highest_track_within_lane']:
@@ -107,12 +106,12 @@ class PlanVisualiser:
 
         swimlane_plot_data = {}
         end_track = 0
-        for lane_number in range(0, len(swimlane_data)):
-            swimlane_entries = [(key, swimlane_data[key]) for key in swimlane_data.keys() if swimlane_data[key]['swimlane_order'] == lane_number + 1]
 
-            assert(len(swimlane_entries) == 1)
+        # Create list of swimlane data entries in order of swimlane number
+        sorted_entries = sorted(swimlane_data.items(), key=lambda x: x[1]['swimlane_number'])
 
-            swimlane, swimlane_entry = swimlane_entries[0]
+        # Calculate start and end track number for each swimlane based on number of tracks required for swimlane
+        for swimlane, swimlane_entry in sorted_entries:
             start_track = end_track + 1
             end_track = start_track + swimlane_entry['highest_track_within_lane'] - 1
             swimlane_plot_data[swimlane] = {
