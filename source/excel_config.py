@@ -2,7 +2,7 @@ import pandas as pd
 from pptx.util import Cm, Pt
 
 
-class ExcelConfig:
+class ExcelFormatConfig:
     """
     Class to read configuration records from a sheet in an Excel File
     """
@@ -37,3 +37,29 @@ class ExcelConfig:
             }
             format_config_records[format_name] = config_record
         return format_config_records
+
+class ExcelPlotConfig:
+    """
+    Class to read configuration records from a sheet in an Excel File
+    """
+
+    def __init__(self, excel_path, excel_sheet, skip_rows=0):
+        self.records = pd.read_excel(excel_path, sheet_name=excel_sheet, engine='openpyxl', skiprows=skip_rows)
+
+    def parse_plot_config(self):
+        record = self.records.iloc[0]
+
+        plot_area_config = {
+            'top': Cm(record['Top']),
+            'left': Cm(record['Left']),
+            'bottom': Cm(record['Bottom']),
+            'right': Cm(record['Right']),
+            'track_height': Cm(record['Track Height']),
+            'track_gap': Cm(record['Track Gap']),
+            'min_start_date': record['Min Date'],
+            'max_end_date': record['Max Date'],
+            'milestone_width': Cm(record['Milestone Width']),
+            'milestone_text_width': Cm(record['Milestone Text Width']),
+            'activity_text_width': Cm(record['Activity Text Width']),
+        }
+        return plot_area_config

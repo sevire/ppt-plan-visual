@@ -4,7 +4,7 @@ import logging
 import sys
 import time
 
-from source.excel_config import ExcelConfig
+from source.excel_config import ExcelFormatConfig, ExcelPlotConfig
 from source.plan_visualiser import PlanVisualiser
 from source.tests.test_data.test_data_01 import plot_data, excel_plan_config_01, \
     plot_area_config_ukview_01, format_config_01, excel_plan_config_02, plot_area_config_ukview_02, \
@@ -78,11 +78,16 @@ def main():
             slide_level_config = data_set_to_use['slide_level_config']
             visualiser = PlanVisualiser.from_excelsmartsheet(plan_data_excel_file, plot_area_config, format_config, plan_excel_config, template_path, slide_level_config)
         elif source == "ExcelSmartSheeta":
+
             plan_data_excel_file = '/Users/livestockinformation/Downloads/UK-View Plan.xlsx'
             plan_excel_config = data_set_to_use['excel_plan_config']
-            plot_area_config = data_set_to_use['plot_area_config']
+
             excel_config_path = '/Users/livestockinformation/Livestock Information Ltd/Data - Data Insights/UK View/planning/planning-visual/PlanningVisualConfig-01.xlsx'
-            excel_config = ExcelConfig(excel_config_path, excel_sheet='FormatConfig')
+
+            excel_plot_config = ExcelPlotConfig(excel_config_path, excel_sheet='PlotConfig')
+            plot_area_config = excel_plot_config.parse_plot_config()
+
+            excel_config = ExcelFormatConfig(excel_config_path, excel_sheet='FormatConfig')
             format_config = {
                 'format_categories': excel_config.parse_format_config()
             }
