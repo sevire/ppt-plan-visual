@@ -42,16 +42,16 @@ driver_data_set = {
     }
 }
 
-data_set_to_use = driver_data_set['ukview-from-smartsheet']
-excel_path = '/Users/livestockinformation/Downloads/UK-View Plan.xlsx'
-# excel_path = '/Users/livestockinformation/Livestock Information Ltd/Data - Data Insights/UK View/planning/UKViewPOAP-01-Driver.xls'
-template_path = '/Users/livestockinformation/Livestock Information Ltd/Data - Data Insights/UK View/planning/planning-visual/UK-ViewPlanOnePager.pptx'
-
 
 def main():
-    ts = time.gmtime()
-    time_string = time.strftime("%Y-%m-%d_%H:%M:%S", ts)
-    logging.basicConfig(filename='../logging/create_plan_visual_{}.log'.format(time_string), level=logging.DEBUG)
+    data_set_to_use = driver_data_set['ukview-from-smartsheet']
+    excel_path = '/Users/livestockinformation/Downloads/UK-View Plan.xlsx'
+    # excel_path = '/Users/livestockinformation/Livestock Information Ltd/Data - Data Insights/UK View/planning/UKViewPOAP-01-Driver.xls'
+    template_path = '/Users/livestockinformation/Livestock Information Ltd/Data - Data Insights/UK View/planning/planning-visual/UK-ViewPlanOnePager.pptx'
+
+    # ts = time.gmtime()
+    # time_string = time.strftime("%Y-%m-%d_%H:%M:%S", ts)
+    # logging.basicConfig(filename='../logging/create_plan_visual_{}.log'.format(time_string), level=logging.DEBUG)
 
     # If no command line arguments supplied, then assume running in test mode or
     # debug, and use hard-coded values for arguments
