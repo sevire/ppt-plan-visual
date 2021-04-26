@@ -35,7 +35,7 @@ class PlanVisualiser:
         self.template = template_path
 
         folder, base, ext = get_path_name_ext(template_path)
-        self.slides_out_path = os.path.join(folder, base + '_outx' + ext)
+        self.slides_out_path = os.path.join(folder, base + '_out' + ext)
         self.prs = Presentation(template_path)
 
         visual_slide = self.prs.slides[0]  # Assume there is one slide and that's where we will place the visual
@@ -76,7 +76,7 @@ class PlanVisualiser:
         :return:
         """
 
-        self.plot_swimlanes(self.slide_level_config)
+        self.plot_swimlanes(self.format_config['format_categories'])
         for plotable_element in self.plan_data:
             start = plotable_element['start_date']
             end = plotable_element['end_date']
@@ -332,6 +332,9 @@ class PlanVisualiser:
                 format_info = format_data['swimlane_format_even']
             else:
                 format_info = format_data['swimlane_format_odd']
+            # Hard code alignment for now.  May need to re-visit
+            format_info['text_align'] = 'left'
+            # ToDo: Add configuration of horizontal alignment for swimlanes
 
             self.shape_fill(shape, format_info)
             self.shape_line(shape, format_info)

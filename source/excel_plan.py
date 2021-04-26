@@ -50,7 +50,7 @@ class ExcelSmartsheetPlan:
         self.excel_format_config_sheet_name = excel_driver_config['excel_format_config_sheet_name']
         self.plan_start_row = excel_driver_config['plan_start_row']
 
-        self.xl_pd_object = pd.read_excel(excel_plan_file, engine='openpyxl')
+        self.xl_pd_object = pd.read_excel(excel_plan_file, engine='openpyxl', sheet_name=self.excel_plan_sheet_name)
         # self.xl_pd_object = pd.ExcelFile(excel_plan_file)
 
     def read_plan_data(self):
