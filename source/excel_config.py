@@ -31,12 +31,13 @@ class ExcelFormatConfig:
                 'font_bold': format_excel_record['Font Bold'],
                 'font_italic': format_excel_record['Font Italic'],
                 'font_colour_rgb': (font_red, font_green, font_blue),
-                'text_position': format_excel_record['Text Position'],
-                'text_align': format_excel_record['Text Horizontal Align'],
+                # 'text_position': format_excel_record['Text Position'],
+                # 'text_align': format_excel_record['Text Horizontal Align'],
                 'text_vertical_align': format_excel_record['Text Vertical Align']
             }
             format_config_records[format_name] = config_record
         return format_config_records
+
 
 class ExcelPlotConfig:
     """

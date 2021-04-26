@@ -35,7 +35,7 @@ class PlanVisualiser:
         self.template = template_path
 
         folder, base, ext = get_path_name_ext(template_path)
-        self.slides_out_path = os.path.join(folder, base + '_out' + ext)
+        self.slides_out_path = os.path.join(folder, base + '_outx' + ext)
         self.prs = Presentation(template_path)
 
         visual_slide = self.prs.slides[0]  # Assume there is one slide and that's where we will place the visual
@@ -64,6 +64,36 @@ class PlanVisualiser:
         extracted_plan_data = excel_manager.read_plan_data()
 
         return PlanVisualiser(extracted_plan_data, extracted_plot_config, extracted_format_config, template_path, slide_level_config)
+
+    def plot_slide(self):
+        """
+        Opens a supplied template file in order to allow consistency with other slides in a deck.
+
+        Then creates a new slide with a plotted plan visual based on the data read in to the object.
+
+        Then writes the one-slide deck to a different filename in the same folder.
+
+        :return:
+        """
+
+        self.plot_swimlanes(self.slide_level_config)
+        for plotable_element in self.plan_data:
+            start = plotable_element['start_date']
+            end = plotable_element['end_date']
+            description = plotable_element['description']
+            swimlane = plotable_element['swimlane']
+            track_num = plotable_element['track_num']
+            num_tracks = plotable_element['bar_height_in_tracks']
+            shape_format_name = plotable_element['format_properties']
+            format_data = self.format_config['format_categories'][shape_format_name]
+            text_layout = plotable_element['text_layout']
+            if plotable_element['type'] == 'bar':
+                self.plot_bar(description, start, end, swimlane, track_num, num_tracks, format_data, text_layout)
+
+            elif plotable_element['type'] == 'milestone':
+                self.plot_milestone(description, start, swimlane, track_num, format_data, text_layout)
+
+        self.prs.save(self.slides_out_path)
 
     def extract_swimlane_data(self):
         """
@@ -120,37 +150,8 @@ class PlanVisualiser:
             }
         return swimlane_plot_data
 
-    def plot_slide(self):
-        """
-        Opens a supplied template file in order to allow consistency with other slides in a deck.
-
-        Then creates a new slide with a plotted plan visual based on the data read in to the object.
-
-        Then writes the one-slide deck to a different filename in the same folder.
-
-        :return:
-        """
-
-        self.plot_swimlanes(self.slide_level_config)
-        for plotable_element in self.plan_data:
-            start = plotable_element['start_date']
-            end = plotable_element['end_date']
-            description = plotable_element['description']
-            swimlane = plotable_element['swimlane']
-            track_num = plotable_element['track_num']
-            num_tracks = plotable_element['bar_height_in_tracks']
-            shape_format_name = plotable_element['format_properties']
-            format_data = self.format_config['format_categories'][shape_format_name]
-            if plotable_element['type'] == 'bar':
-                self.plot_bar(description, start, end, swimlane, track_num, num_tracks, format_data)
-
-            elif plotable_element['type'] == 'milestone':
-                self.plot_milestone(description, start, swimlane, track_num, format_data)
-
-        self.prs.save(self.slides_out_path)
-
     def plot_bar(self, activity_description, start_date, end_date, swimlane, track_number, num_tracks,
-                 properties):
+                 properties, text_layout):
         swimlane_start = self.swimlane_data[swimlane]['start_track']
 
         left = self.plot_driver.date_to_x_coordinate(start_date)
@@ -173,27 +174,27 @@ class PlanVisualiser:
         self.shape_fill(shape, properties)
         self.shape_line(shape, properties)
 
-        # Work out what to do about the text label for the bar.
-        text_position = properties['text_position']
-
         activity_text_width = self.plot_config['activity_text_width']
-        if text_position == 'left':
+        if text_layout == 'Left':
             # Extend the text to the left so that if overflows to the left of the shape.
             adjust_width = max(width, activity_text_width)
             text_left = left + width - adjust_width
             text_width = activity_text_width
+            properties['text_align'] = 'right'
             self.plot_text(activity_description, text_left, top, text_width, height, properties)
-        elif text_position == 'right':
+        elif text_layout == 'Right':
             # Extend text to the right so that it overflows to the right of the shape
             adjust_width = max(width, activity_text_width)
             text_left = left
             text_width = adjust_width
+            properties['text_align'] = 'left'
             self.plot_text(activity_description, text_left, top, text_width, height, properties)
-        else:
+        else:  # Apply default which is "Shape"
             # Standard positioning, text will align exactly with the shape
+            properties['text_align'] = 'centre'
             self.plot_text(activity_description, left, top, width, height, properties)
 
-    def plot_milestone(self, milestone_description, start_date, swimlane, track_number, properties):
+    def plot_milestone(self, milestone_description, start_date, swimlane, track_number, properties, text_layout):
         swimlane_start = self.swimlane_data[swimlane]['start_track']
         milestone_width = self.plot_config['milestone_width']
         milestone_height = self.plot_config['track_height']
@@ -208,17 +209,26 @@ class PlanVisualiser:
         self.shape_fill(shape, properties)
         self.shape_line(shape, properties)
 
-        # Work out what to do about the text label for the bar.
-        text_position = properties['text_position']
-
-        if text_position == "right":
+        if text_layout == "Right":
             milestone_text_width = self.plot_config['milestone_text_width']
             milestone_text_left = left + milestone_width
+            properties['text_align'] = 'left'
             self.plot_text(milestone_description, milestone_text_left, top, milestone_text_width, milestone_height, properties)
-        else:
+        else:  # Default is left
             milestone_text_width = self.plot_config['milestone_text_width']
             milestone_text_left = left - milestone_text_width
+            properties['text_align'] = 'right'
             self.plot_text(milestone_description, milestone_text_left, top, milestone_text_width, milestone_height, properties)
+
+    def plot_text(self, text, left, top, width, height, format_data):
+
+        shape = self.shapes.add_shape(
+            MSO_AUTO_SHAPE_TYPE.RECTANGLE, left, top, width, height
+        )
+        shape.fill.background()
+        shape.line.fill.background()
+
+        self.add_text_to_shape(shape, text, format_data)
 
     def add_text_to_shape(self, shape, text, format_data):
         text_frame = shape.text_frame
@@ -240,16 +250,6 @@ class PlanVisualiser:
         run.text = text
 
         self.text_format(paragraph, run, format_data)
-
-    def plot_text(self, text, left, top, width, height, format_data):
-
-        shape = self.shapes.add_shape(
-            MSO_AUTO_SHAPE_TYPE.RECTANGLE, left, top, width, height
-        )
-        shape.fill.background()
-        shape.line.fill.background()
-
-        self.add_text_to_shape(shape, text, format_data)
 
     def shape_fill(self, shape, format_data):
         fill = shape.fill
@@ -274,11 +274,13 @@ class PlanVisualiser:
         font.italic = format_data['font_italic']
         font.color.rgb = RGBColor(*format_data['font_colour_rgb'])
 
-    def shape_line(self, shape, format_data):
+    @staticmethod
+    def shape_line(shape, format_data):
         line = shape.line
         line.color.rgb = RGBColor(*format_data['line_rgb'])
 
-    def text_alignment(self, format_text_align):
+    @staticmethod
+    def text_alignment(format_text_align):
         """
         Takes the alignment field from the element formatting data and converts to the appropriate value for the
         pptx-python setting.
@@ -334,5 +336,3 @@ class PlanVisualiser:
             self.shape_fill(shape, format_info)
             self.shape_line(shape, format_info)
             self.add_text_to_shape(shape, swimlane, format_info)
-
-

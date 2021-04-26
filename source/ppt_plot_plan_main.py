@@ -47,7 +47,7 @@ def main():
     data_set_to_use = driver_data_set['ukview-from-smartsheet']
     excel_path = '/Users/livestockinformation/Downloads/UK-View Plan.xlsx'
     # excel_path = '/Users/livestockinformation/Livestock Information Ltd/Data - Data Insights/UK View/planning/UKViewPOAP-01-Driver.xls'
-    template_path = '/Users/livestockinformation/Livestock Information Ltd/Data - Data Insights/UK View/planning/planning-visual/UK-ViewPlanOnePager.pptx'
+    template_path = '/Users/livestockinformation/Livestock Information Ltd/Data - UK Data/UK View/planning/planning-visual/UK-ViewPlanOnePager.pptx'
 
     # ts = time.gmtime()
     # time_string = time.strftime("%Y-%m-%d_%H:%M:%S", ts)
@@ -82,7 +82,7 @@ def main():
             plan_data_excel_file = '/Users/livestockinformation/Downloads/UK-View Plan.xlsx'
             plan_excel_config = data_set_to_use['excel_plan_config']
 
-            excel_config_path = '/Users/livestockinformation/Livestock Information Ltd/Data - Data Insights/UK View/planning/planning-visual/PlanningVisualConfig-01.xlsx'
+            excel_config_path = '/Users/livestockinformation/Livestock Information Ltd/Data - UK Data/UK View/planning/planning-visual/PlanningVisualConfig-01.xlsx'
 
             excel_plot_config = ExcelPlotConfig(excel_config_path, excel_sheet='PlotConfig')
             plot_area_config = excel_plot_config.parse_plot_config()

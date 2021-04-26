@@ -86,7 +86,8 @@ class ExcelSmartsheetPlan:
                     'swimlane': milestone_data['Visual Swimlane'],
                     'track_num': milestone_data['Visual Track # Within Swimlane'],
                     'bar_height_in_tracks': milestone_data['Visual # Tracks To Cover'],
-                    'format_properties': milestone_data['Format String']
+                    'format_properties': milestone_data['Format String'],
+                    'text_layout': milestone_data['Text Layout']
                 }
                 plan_data.append(record)
 
