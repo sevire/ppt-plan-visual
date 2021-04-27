@@ -19,7 +19,7 @@ class PlanVisualiser:
     :param plan_data:
     """
 
-    def __init__(self, plan_data, plot_config, format_config, template_path, slide_level_config):
+    def __init__(self, plan_data, plot_config, format_config, template_path, swimlanes):
         # The actual plan data with activities and milestones, start/finish dates etc.
         self.plan_data = plan_data
 
@@ -29,9 +29,9 @@ class PlanVisualiser:
         # Data with pre-determined formatting properties to apply to elements.
         self.format_config = format_config
 
-        # Config to drive slide level objects such as the swimlane rectangle shapes as background.
-        self.slide_level_config = slide_level_config
-
+        # # Config to drive slide level objects such as the swimlane rectangle shapes as background.
+        # self.slide_level_config = slide_level_config
+        #
         self.template = template_path
 
         folder, base, ext = get_path_name_ext(template_path)
@@ -43,6 +43,7 @@ class PlanVisualiser:
         self.shapes = visual_slide.shapes
         self.plot_driver = PlotDriver(plot_config)
 
+        self.swimlanes = swimlanes
         self.swimlane_data = self.extract_swimlane_data()
 
     @classmethod
@@ -106,7 +107,8 @@ class PlanVisualiser:
         - Once you have checked every activity, the entry in each swimlane will have recorded the number of tracks
           required for that swimlane.
         - We can then go back and calculate the start and end track for each swimlane which is what the plot method
-          needs.
+          needs.  If a specific swimlane order is dictated then that is used here.  Where a swimlane doesn't appear in
+          the ordering then we just add it to the end.
 
           So we will end up with a dict, with one entry for each (named) swimlane, and against each swimlane we will
           see the start track number and the end track number.
@@ -115,7 +117,7 @@ class PlanVisualiser:
         """
 
         swimlane_data = {}
-        swimlane_manager = SwimlaneManager(self.slide_level_config['swimlanes'])
+        swimlane_manager = SwimlaneManager(self.swimlanes)
         for record in self.plan_data:
             swimlane = record['swimlane']
             track_num_high = record['track_num'] + record['bar_height_in_tracks'] - 1

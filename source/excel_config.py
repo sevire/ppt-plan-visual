@@ -64,3 +64,18 @@ class ExcelPlotConfig:
             'activity_text_width': Cm(record['Activity Text Width']),
         }
         return plot_area_config
+
+
+class ExcelSwimlaneConfig:
+    """
+    Class to read swimlane order
+    """
+
+    def __init__(self, excel_path, excel_sheet, skip_rows=0):
+        self.records = pd.read_excel(excel_path, sheet_name=excel_sheet, engine='openpyxl', skiprows=skip_rows)
+
+    def parse_swimlane_config(self):
+        swimlanes = []
+        for id, swimlane_record in self.records.iterrows():
+            swimlanes.append(swimlane_record['Swimlane'])
+        return swimlanes

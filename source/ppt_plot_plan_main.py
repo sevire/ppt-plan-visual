@@ -2,7 +2,7 @@ import logging
 import sys
 import time
 
-from source.excel_config import ExcelFormatConfig, ExcelPlotConfig
+from source.excel_config import ExcelFormatConfig, ExcelPlotConfig, ExcelSwimlaneConfig
 from source.plan_visualiser import PlanVisualiser
 from source.tests.test_data.test_data_01 import format_config_01
 
@@ -37,9 +37,13 @@ def main():
     format_config = {
         'format_categories': excel_format_config.parse_format_config()
     }
+
+    swimlane_config = ExcelSwimlaneConfig(excel_config_path, excel_sheet='Swimlanes')
+    swimlanes = swimlane_config.parse_swimlane_config()
+
     slide_level_config = format_config_01['slide_level_categories']['UKViewPOAP']
     visualiser = PlanVisualiser.from_excelsmartsheet(plan_data_excel_file, plot_area_config, format_config,
-                                                     plan_excel_config, template_path, slide_level_config)
+                                                     plan_excel_config, template_path, swimlanes)
 
     visualiser.plot_slide()
 
