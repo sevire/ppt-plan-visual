@@ -1,4 +1,7 @@
 import os
+from calendar import monthrange
+
+from dateutil.relativedelta import relativedelta
 
 
 def get_path_name_ext(path):
@@ -7,6 +10,29 @@ def get_path_name_ext(path):
     base, ext = os.path.splitext(file)
 
     return folder, base, ext
+
+
+def first_day_of_month(date):
+    return date.replace(day=1)
+
+
+def last_day_of_month(date):
+    return date.replace(day=monthrange(date.year, date.month)[1])
+
+
+def month_increment(date, num_months):
+    return date + relativedelta(months=num_months)
+
+
+def num_months_between_dates(start_date, end_date):
+    r = relativedelta(end_date, start_date)
+    return r.years * 12 + r.months + 1
+
+
+def iterate_months(date, num_months):
+    yield date
+    for month in range(num_months):
+        yield month_increment(date, month)
 
 
 class SwimlaneManager:

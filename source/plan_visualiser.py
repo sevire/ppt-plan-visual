@@ -1,4 +1,6 @@
 import os
+from calendar import Calendar, day_name, month_name
+
 from pptx import Presentation
 from pptx.dml.color import RGBColor
 from pptx.enum.shapes import MSO_AUTO_SHAPE_TYPE
@@ -6,7 +8,8 @@ from pptx.enum.text import PP_PARAGRAPH_ALIGNMENT as PP_ALIGN
 from pptx.enum.text import MSO_VERTICAL_ANCHOR as MSO_ANCHOR
 from source.excel_plan import ExcelPlan, ExcelSmartsheetPlan
 from source.plot_driver import PlotDriver
-from source.utilities import get_path_name_ext, SwimlaneManager
+from source.utilities import get_path_name_ext, SwimlaneManager, first_day_of_month, iterate_months, \
+    num_months_between_dates, last_day_of_month, month_increment
 
 
 class PlanVisualiser:
@@ -78,6 +81,7 @@ class PlanVisualiser:
         """
 
         self.plot_swimlanes(self.format_config['format_categories'])
+        self.plot_month_bar()
         for plotable_element in self.plan_data:
             start = plotable_element['start_date']
             end = plotable_element['end_date']
@@ -89,7 +93,7 @@ class PlanVisualiser:
             format_data = self.format_config['format_categories'][shape_format_name]
             text_layout = plotable_element['text_layout']
             if plotable_element['type'] == 'bar':
-                self.plot_bar(description, start, end, swimlane, track_num, num_tracks, format_data, text_layout)
+                self.plot_activity(description, start, end, swimlane, track_num, num_tracks, format_data, text_layout)
 
             elif plotable_element['type'] == 'milestone':
                 self.plot_milestone(description, start, swimlane, track_num, format_data, text_layout)
@@ -152,8 +156,42 @@ class PlanVisualiser:
             }
         return swimlane_plot_data
 
-    def plot_bar(self, activity_description, start_date, end_date, swimlane, track_number, num_tracks,
-                 properties, text_layout):
+    def plot_shape(self, shape_type, left, top, width, height, text, text_layout, shape_properties):
+        shape = self.shapes.add_shape(
+            shape_type, left, top, width, height
+        )
+
+        # Adjust rounded corner radius
+        if shape_type == MSO_AUTO_SHAPE_TYPE.ROUNDED_RECTANGLE:
+            target_radius = shape_properties['corner_radius']
+            adjustment_value = target_radius / height
+            shape.adjustments[0] = adjustment_value
+
+        self.shape_fill(shape, shape_properties)
+        self.shape_line(shape, shape_properties)
+
+        activity_text_width = self.plot_config['activity_text_width']
+        if text_layout == 'Left':
+            # Extend the text to the left so that if overflows to the left of the shape.
+            adjust_width = max(width, activity_text_width)
+            text_left = left + width - adjust_width
+            text_width = activity_text_width
+            shape_properties['text_align'] = 'right'
+            self.plot_text(text, text_left, top, text_width, height, shape_properties)
+        elif text_layout == 'Right':
+            # Extend text to the right so that it overflows to the right of the shape
+            adjust_width = max(width, activity_text_width)
+            text_left = left
+            text_width = adjust_width
+            shape_properties['text_align'] = 'left'
+            self.plot_text(text, text_left, top, text_width, height, shape_properties)
+        else:  # Apply default which is "Shape"
+            # Standard positioning, text will align exactly with the shape
+            shape_properties['text_align'] = 'centre'
+            self.plot_text(text, left, top, width, height, shape_properties)
+
+    def plot_activity(self, activity_description, start_date, end_date, swimlane, track_number, num_tracks,
+                      properties, text_layout):
         swimlane_start = self.swimlane_data[swimlane]['start_track']
 
         left = self.plot_driver.date_to_x_coordinate(start_date)
@@ -163,38 +201,8 @@ class PlanVisualiser:
         top = self.plot_driver.track_number_to_y_coordinate(swimlane_start + track_number - 1)
         height = self.plot_driver.height_of_track(num_tracks)
 
-        shape = self.shapes.add_shape(
-            MSO_AUTO_SHAPE_TYPE.ROUNDED_RECTANGLE, left, top, width, height
-        )
-
-        # Adjust rounded corner radius
-        target_radius = properties['corner_radius']
-        adjustment_value = target_radius / height
-
-        shape.adjustments[0] = adjustment_value
-
-        self.shape_fill(shape, properties)
-        self.shape_line(shape, properties)
-
-        activity_text_width = self.plot_config['activity_text_width']
-        if text_layout == 'Left':
-            # Extend the text to the left so that if overflows to the left of the shape.
-            adjust_width = max(width, activity_text_width)
-            text_left = left + width - adjust_width
-            text_width = activity_text_width
-            properties['text_align'] = 'right'
-            self.plot_text(activity_description, text_left, top, text_width, height, properties)
-        elif text_layout == 'Right':
-            # Extend text to the right so that it overflows to the right of the shape
-            adjust_width = max(width, activity_text_width)
-            text_left = left
-            text_width = adjust_width
-            properties['text_align'] = 'left'
-            self.plot_text(activity_description, text_left, top, text_width, height, properties)
-        else:  # Apply default which is "Shape"
-            # Standard positioning, text will align exactly with the shape
-            properties['text_align'] = 'centre'
-            self.plot_text(activity_description, left, top, width, height, properties)
+        self.plot_shape(MSO_AUTO_SHAPE_TYPE.ROUNDED_RECTANGLE, left, top, width, height, activity_description,
+                        text_layout, properties)
 
     def plot_milestone(self, milestone_description, start_date, swimlane, track_number, properties, text_layout):
         swimlane_start = self.swimlane_data[swimlane]['start_track']
@@ -341,3 +349,34 @@ class PlanVisualiser:
             self.shape_fill(shape, format_info)
             self.shape_line(shape, format_info)
             self.add_text_to_shape(shape, swimlane, format_info)
+
+    def plot_month_bar(self):
+        """
+        Create a rectangle for each month on the timeline, driven by the configured start and end date for the plan.
+        The rectangles will have a configured height and each will be the width corresponding to the number of days
+        in the month.
+
+        :return:
+        """
+        first_of_start_month = first_day_of_month(self.plot_config['min_start_date'])
+        first_of_end_month = first_day_of_month(self.plot_config['max_end_date'])
+
+        for month_index, month_start_date in enumerate(iterate_months(first_of_start_month, num_months_between_dates(first_of_start_month, first_of_end_month))):
+            left = self.plot_driver.date_to_x_coordinate(month_start_date)
+            right = self.plot_driver.date_to_x_coordinate(last_day_of_month(month_start_date))
+            width = right - left
+
+            height = (self.plot_config['track_height'] * 1)
+            top = self.plot_config['top'] - height
+
+            if month_index % 2 == 1:
+                shape_format = self.format_config['format_categories']['month_shape_format_odd']
+            else:
+                shape_format = self.format_config['format_categories']['month_shape_format_even']
+
+            month = month_name[month_start_date.month][:3]
+
+            self.plot_shape(MSO_AUTO_SHAPE_TYPE.RECTANGLE, left, top, width, height, month, 'shape', shape_format)
+
+
+
