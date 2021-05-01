@@ -1,59 +1,19 @@
 import logging
-
 import pandas as pd
-import numpy as np
 
 root_logger = logging.getLogger()
 
 
 class ExcelPlan:
-    def __init__(self, excel_driver_config, excel_plan_file):
-        self.excel_plan_sheet_name = excel_driver_config['excel_plan_sheet_name']
-        self.excel_plot_config_sheet_name = excel_driver_config['excel_plot_config_sheet_name']
-        self.excel_format_config_sheet_name = excel_driver_config['excel_format_config_sheet_name']
-        self.plan_start_row = excel_driver_config['plan_start_row']
-
-        self.xl_pd_object = pd.ExcelFile(excel_plan_file)
-
-    def read_plan_data(self):
-        milestones = self.xl_pd_object.parse(self.excel_plan_sheet_name, skiprows=self.plan_start_row - 1)
-        milestones.set_index('Id', inplace=True)
-
-        plan_data = []
-
-        for row_id, milestone_data in milestones.iterrows():
-            # Will probably need to pre-process dates so readable by Python
-            start_date = milestone_data['Start Date']
-            end_date = milestone_data['End Date']
-
-            record = {
-                'id': row_id,
-                'description': milestone_data['Description'],
-                'type': milestone_data['Activity Type'],
-                'start_date': start_date,
-                'end_date': end_date,
-                'swimlane': milestone_data['Swimlane'],
-                'track_num': milestone_data['Visual Track Number Within Swimlane'],
-                'bar_height_in_tracks': milestone_data['Visual Num Tracks To Span'],
-                'format_properties': milestone_data['Format Name']
-            }
-            plan_data.append(record)
-
-        return plan_data
-
-
-class ExcelSmartsheetPlan:
     """
     Excel import but specifically customised for the SmartSheet plan format used in a real plan.
     Main difference is the column names and the fact that not all rows are to be included.
 
     The rows which are to be included have the column "Visual Flag" set to true
     """
-    def __init__(self, excel_driver_config, excel_plan_file):
-        self.excel_plan_sheet_name = excel_driver_config['excel_plan_sheet_name']
-        self.excel_plot_config_sheet_name = excel_driver_config['excel_plot_config_sheet_name']
-        self.excel_format_config_sheet_name = excel_driver_config['excel_format_config_sheet_name']
-        self.plan_start_row = excel_driver_config['plan_start_row']
+
+    @staticmethod
+    def read_plan_data(excel_plan_file, excel_plan_sheet_name):
 
         read_cols =[
             'Task Name',
@@ -71,27 +31,19 @@ class ExcelSmartsheetPlan:
         ]
 
         converters = {
-            'Visual Flag': ExcelSmartsheetPlan.bool_converter
+            'Visual Flag': ExcelPlan.bool_converter
         }
 
-        pd_object_with_nan = pd.read_excel(
+        pd_object = pd.read_excel(
             excel_plan_file,
             engine='openpyxl',
-            sheet_name=self.excel_plan_sheet_name,
+            sheet_name=excel_plan_sheet_name,
             usecols=read_cols,
             converters=converters
         )
-        self.xl_pd_object = pd_object_with_nan
-        # ToDo: Decide how we are going to deal with NaNs
-
-    def read_plan_data(self):
-        milestones = self.xl_pd_object
-        # milestones = self.xl_pd_object.parse(self.excel_plan_sheet_name, skiprows=self.plan_start_row - 1)
-        # milestones.set_index('Id', inplace=True)
-
         plan_data = []
 
-        for index, milestone_data in milestones.iterrows():
+        for index, milestone_data in pd_object.iterrows():
             flag = milestone_data['Visual Flag']
             if flag is True:
                 start_date = milestone_data['Start']

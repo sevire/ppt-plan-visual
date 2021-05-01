@@ -1,6 +1,5 @@
 import logging
 import os
-import numpy as np
 from calendar import month_name
 from datetime import date
 
@@ -9,7 +8,7 @@ from pptx.dml.color import RGBColor
 from pptx.enum.shapes import MSO_AUTO_SHAPE_TYPE
 from pptx.enum.text import PP_PARAGRAPH_ALIGNMENT as PP_ALIGN
 from pptx.enum.text import MSO_VERTICAL_ANCHOR as MSO_ANCHOR
-from source.excel_plan import ExcelPlan, ExcelSmartsheetPlan
+from source.excel_plan import ExcelPlan
 from source.plot_driver import PlotDriver
 from source.utilities import get_path_name_ext, SwimlaneManager, first_day_of_month, iterate_months, \
     num_months_between_dates, last_day_of_month, is_current, is_nan, is_future, is_past
@@ -65,7 +64,7 @@ class PlanVisualiser:
         :return:
         """
 
-        self.plot_swimlanes(self.format_config['format_categories'])
+        self.plot_swimlanes(self.format_config)
         self.plot_month_bar()
 
         root_logger.info(f'Plotting {len(self.plan_data)} elements')
@@ -83,8 +82,8 @@ class PlanVisualiser:
 
             shape_format_name = plotable_element['format_properties']
             done_shape_format_name = plotable_element['done_format_properties']
-            format_data = self.format_config['format_categories'][shape_format_name]
-            done_format_data = None if is_nan(done_shape_format_name) else self.format_config['format_categories'][done_shape_format_name]
+            format_data = self.format_config[shape_format_name]
+            done_format_data = None if is_nan(done_shape_format_name) else self.format_config[done_shape_format_name]
 
             text_layout = plotable_element['text_layout']
             if plotable_element['type'] == 'bar':
@@ -380,9 +379,9 @@ class PlanVisualiser:
             top = self.plot_config['top'] - height
 
             if month_index % 2 == 1:
-                shape_format = self.format_config['format_categories']['month_shape_format_odd']
+                shape_format = self.format_config['month_shape_format_odd']
             else:
-                shape_format = self.format_config['format_categories']['month_shape_format_even']
+                shape_format = self.format_config['month_shape_format_even']
 
             month = month_name[month_start_date.month][:3]
 
@@ -390,24 +389,10 @@ class PlanVisualiser:
             self.plot_text_for_shape(left, top, width, height, month, shape_format, 'shape')
 
     @classmethod
-    def from_excel(cls, plan_data_excel_path, plot_area_config, format_config, excel_driver_config, template_path, slide_level_config):
-        excel_manager = ExcelPlan(excel_driver_config, plan_data_excel_path)
+    def from_excel_plan(cls, plan_data_excel_path, plan_data_sheet_name):
+        extracted_plan_data = ExcelPlan.read_plan_data(plan_data_excel_path, plan_data_sheet_name)
 
-        extracted_plot_config = plot_area_config
-        extracted_format_config = format_config
-        extracted_plan_data = excel_manager.read_plan_data()
-
-        return PlanVisualiser(extracted_plan_data, extracted_plot_config, extracted_format_config, template_path, slide_level_config)
-
-    @classmethod
-    def from_excelsmartsheet(cls, plan_data_excel_path, plot_area_config, format_config, excel_driver_config, template_path, slide_level_config):
-        excel_manager = ExcelSmartsheetPlan(excel_driver_config, plan_data_excel_path)
-
-        extracted_plot_config = plot_area_config
-        extracted_format_config = format_config
-        extracted_plan_data = excel_manager.read_plan_data()
-
-        return PlanVisualiser(extracted_plan_data, extracted_plot_config, extracted_format_config, template_path, slide_level_config)
+        return extracted_plan_data
 
     def extract_swimlane_data(self):
         """

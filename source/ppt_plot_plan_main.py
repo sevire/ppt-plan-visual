@@ -1,16 +1,28 @@
 import logging
-import sys
 import time
 from logging.handlers import RotatingFileHandler
-
 from source.excel_config import ExcelFormatConfig, ExcelPlotConfig, ExcelSwimlaneConfig
+from source.excel_plan import ExcelPlan
 from source.plan_visualiser import PlanVisualiser
-from source.tests.test_data.test_data_01 import format_config_01
 
 
-def main():
-    root_logger = logging.getLogger()
+def get_parameters():
+    parameters = {
+        'excel_plan_file': '/Users/livestockinformation/Downloads/UK-View Plan.xlsx',
+        'excel_plan_sheet': 'UK-View Plan',
+        'excel_plot_cfg_file': '/Users/livestockinformation/Livestock Information Ltd/Data - UK Data/UK View/planning/planning-visual/PlanningVisualConfig-01.xlsx',
+        'excel_plot_cfg_sheet': 'PlotConfig',
+        'excel_format_cfg_file': '/Users/livestockinformation/Livestock Information Ltd/Data - UK Data/UK View/planning/planning-visual/PlanningVisualConfig-01.xlsx',
+        'excel_format_cfg_sheet': 'FormatConfig',
+        'swimlanes_cfg_file': '/Users/livestockinformation/Livestock Information Ltd/Data - UK Data/UK View/planning/planning-visual/PlanningVisualConfig-01.xlsx',
+        'swimlanes_cfg_sheet': 'Swimlanes',
+        'ppt_template_file': '/Users/livestockinformation/Livestock Information Ltd/Data - UK Data/UK View/planning/planning-visual/UK-ViewPlanOnePager.pptx',
+    }
 
+    return parameters
+
+
+def configure_logger(logger):
     log_formatter = logging.Formatter("[%(levelname)-5.5s] %(asctime)s [%(threadName)-12.12s] %(message)s")
 
     ts = time.gmtime()
@@ -19,55 +31,53 @@ def main():
     # Probably doesn't need to rotate files as the log file is always created each time the app is run.
     file_handler = RotatingFileHandler(f"{'../logging'}/{'plan_to_ppt'}-{time_string}.log")
     file_handler.setFormatter(log_formatter)
-    root_logger.addHandler(file_handler)
+    logger.addHandler(file_handler)
 
     console_handler = logging.StreamHandler()
     console_handler.setFormatter(log_formatter)
-    root_logger.addHandler(console_handler)
+    logger.addHandler(console_handler)
 
-    root_logger.setLevel(logging.INFO)
+    logger.setLevel(logging.INFO)
+
+
+def main():
+    root_logger = logging.getLogger()
+    configure_logger(root_logger)
 
     root_logger.debug('Plan to PowerPoint plotting programme starting...')
+    root_logger.info(f"Running from IDE, using fixed arguments")
 
-    template_path = '/Users/livestockinformation/Livestock Information Ltd/Data - UK Data/UK View/planning/planning-visual/UK-ViewPlanOnePager.pptx'
+    parameters = get_parameters()
 
-    # ts = time.gmtime()
-    # time_string = time.strftime("%Y-%m-%d_%H:%M:%S", ts)
-    # logging.basicConfig(filename='../logging/create_plan_visual_{}.log'.format(time_string), level=logging.DEBUG)
+    excel_plan_file = parameters['excel_plan_file']
+    excel_plan_sheet = parameters['excel_plan_sheet']
+    excel_plot_cfg_file = parameters['excel_plot_cfg_file']
+    excel_plot_cfg_sheet = parameters['excel_plot_cfg_sheet']
+    excel_format_cfg_file = parameters['excel_format_cfg_file']
+    excel_format_cfg_sheet = parameters['excel_format_cfg_sheet']
+    swimlanes_cfg_file = parameters['swimlanes_cfg_file']
+    swimlanes_cfg_sheet = parameters['swimlanes_cfg_sheet']
+    ppt_template_file = parameters['ppt_template_file']
 
-    # If no command line arguments supplied, then assume running in test mode or
-    # debug, and use hard-coded values for arguments
+    root_logger.info(f'Using plan data from {excel_plan_file}')
+    extracted_plan_data = ExcelPlan.read_plan_data(excel_plan_file, excel_plan_sheet)
 
-    # For testing, choose whether to use Excel import or test data
-    source = "ExcelSmartSheeta"
+    plot_config_object = ExcelPlotConfig(excel_plot_cfg_file, excel_sheet=excel_plot_cfg_sheet)
+    plot_area_config = plot_config_object.parse_plot_config()
 
-    root_logger.info(f"Running from IDE, using fixed arguments, from {source}")
+    excel_format_config_object = ExcelFormatConfig(excel_format_cfg_file, excel_sheet=excel_format_cfg_sheet)
+    format_config = excel_format_config_object.parse_format_config()
 
-    plan_excel_config = {
-        'excel_plan_sheet_name': 'UK-View Plan',
-        'excel_plot_config_sheet_name': 'PlotConfig',
-        'excel_format_config_sheet_name': 'FormatConfig',
-        'plan_start_row': 1
-    }
-    plan_data_excel_file = '/Users/livestockinformation/Downloads/UK-View Plan.xlsx'
-    root_logger.info(f'Using plan data from {plan_data_excel_file}')
+    swimlane_config_object = ExcelSwimlaneConfig(swimlanes_cfg_file, excel_sheet=swimlanes_cfg_sheet)
+    swimlanes = swimlane_config_object.parse_swimlane_config()
 
-    excel_config_path = '/Users/livestockinformation/Livestock Information Ltd/Data - UK Data/UK View/planning/planning-visual/PlanningVisualConfig-01.xlsx'
-    root_logger.info(f'Using config info from {excel_config_path}')
-
-    excel_plot_config = ExcelPlotConfig(excel_config_path, excel_sheet=plan_excel_config['excel_plot_config_sheet_name'])
-    plot_area_config = excel_plot_config.parse_plot_config()
-
-    excel_format_config = ExcelFormatConfig(excel_config_path, excel_sheet=plan_excel_config['excel_format_config_sheet_name'])
-    format_config = {
-        'format_categories': excel_format_config.parse_format_config()
-    }
-
-    swimlane_config = ExcelSwimlaneConfig(excel_config_path, excel_sheet='Swimlanes')
-    swimlanes = swimlane_config.parse_swimlane_config()
-
-    visualiser = PlanVisualiser.from_excelsmartsheet(plan_data_excel_file, plot_area_config, format_config,
-                                                     plan_excel_config, template_path, swimlanes)
+    visualiser = PlanVisualiser(
+        extracted_plan_data,
+        plot_area_config,
+        format_config,
+        ppt_template_file,
+        swimlanes
+    )
 
     visualiser.plot_slide()
 
