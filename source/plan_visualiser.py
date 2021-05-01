@@ -378,6 +378,7 @@ class PlanVisualiser:
             month = month_name[month_start_date.month][:3]
 
             self.plot_shape(MSO_AUTO_SHAPE_TYPE.RECTANGLE, left, top, width, height, shape_format)
+            self.plot_text_for_shape(left, top, width, height, month, shape_format, 'shape')
 
     @classmethod
     def from_excel(cls, plan_data_excel_path, plot_area_config, format_config, excel_driver_config, template_path, slide_level_config):
