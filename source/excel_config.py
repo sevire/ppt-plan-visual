@@ -33,11 +33,25 @@ class ExcelFormatConfig:
                 'font_bold': format_excel_record['Font Bold'],
                 'font_italic': format_excel_record['Font Italic'],
                 'font_colour_rgb': (font_red, font_green, font_blue),
-                # 'text_position': format_excel_record['Text Position'],
-                # 'text_align': format_excel_record['Text Horizontal Align'],
                 'text_vertical_align': format_excel_record['Text Vertical Align']
             }
             format_config_records[format_name] = config_record
+
+        # Check whether a 'Default' style has been include, if not add a default default :-)
+        if 'Default' not in format_config_records:
+            default_record = {
+                'fill_rgb': (0, 255, 255),
+                'line_rgb': (255, 0, 0),
+                'corner_radius': 0,
+                'font_size': Pt(8),
+                'font_bold': False,
+                'font_italic': False,
+                'font_colour_rgb': (0, 0, 0),
+                'text_vertical_align': 'middle'
+            }
+
+            format_config_records['Default'] = default_record
+
         return format_config_records
 
 

@@ -1,5 +1,9 @@
+import logging
+
 import pandas as pd
 import numpy as np
+
+root_logger = logging.getLogger()
 
 
 class ExcelPlan:
@@ -95,14 +99,40 @@ class ExcelSmartsheetPlan:
                 duration = milestone_data['Duration']
                 description = milestone_data['Task Name']
                 visual_text = milestone_data['Visual Text']
+                visual_swimlane = milestone_data['Visual Swimlane']
+                track_num = milestone_data['Visual Track # Within Swimlane']
+                num_tracks = milestone_data['Visual # Tracks To Cover']
+                format_properties = milestone_data['Format String']
+
+                # Pre-processing and setting defaults for missing values
+
                 if pd.isnull(visual_text):
                     text = description
                 else:
                     text = visual_text
+
                 if duration == '0':
                     activity_type = 'milestone'
+                    root_logger.debug(f'Activity [{description}:40.40] is a milestone')
                 else:
                     activity_type = 'bar'
+                    root_logger.debug(f'Activity [{description}:40.40] is an activity')
+
+                if pd.isnull(visual_swimlane):
+                    root_logger.warning(f'No swimlane specified for [{description:40.40}], setting to "Default"')
+                    visual_swimlane = 'Default'
+
+                if pd.isnull(track_num):
+                    root_logger.warning(f'No track num specified for [{description:40.40}], setting to 1')
+                    track_num = 1
+
+                if pd.isnull(num_tracks):
+                    root_logger.warning(f'Num tracks not specified for [{description:40.40}], setting to 1')
+                    num_tracks = 1
+
+                if pd.isnull(format_properties):
+                    root_logger.warning(f'Format name not specific for [{description:40.40}], setting to "Default"')
+                    format_properties = 'Default'
 
                 record = {
                     'id': index,
@@ -110,10 +140,10 @@ class ExcelSmartsheetPlan:
                     'type': activity_type,
                     'start_date': start_date,
                     'end_date': end_date,
-                    'swimlane': milestone_data['Visual Swimlane'],
-                    'track_num': milestone_data['Visual Track # Within Swimlane'],
-                    'bar_height_in_tracks': milestone_data['Visual # Tracks To Cover'],
-                    'format_properties': milestone_data['Format String'],
+                    'swimlane': visual_swimlane,
+                    'track_num': track_num,
+                    'bar_height_in_tracks': num_tracks,
+                    'format_properties': format_properties,
                     'done_format_properties': milestone_data['Done Format String'],
                     'text_layout': milestone_data['Text Layout']
                 }
