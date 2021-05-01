@@ -1,3 +1,4 @@
+import logging
 import os
 import numpy as np
 from calendar import month_name
@@ -12,6 +13,8 @@ from source.excel_plan import ExcelPlan, ExcelSmartsheetPlan
 from source.plot_driver import PlotDriver
 from source.utilities import get_path_name_ext, SwimlaneManager, first_day_of_month, iterate_months, \
     num_months_between_dates, last_day_of_month, is_current, is_nan, is_future, is_past
+
+root_logger = logging.getLogger()
 
 
 class PlanVisualiser:
@@ -64,10 +67,16 @@ class PlanVisualiser:
 
         self.plot_swimlanes(self.format_config['format_categories'])
         self.plot_month_bar()
+
+        root_logger.info(f'Plotting {len(self.plan_data)} elements')
+
         for plotable_element in self.plan_data:
             start = plotable_element['start_date']
             end = plotable_element['end_date']
             description = plotable_element['description']
+
+            root_logger.debug(f'Plotting activity: [{description:40.40}], start: {start}, end: {end}')
+
             swimlane = plotable_element['swimlane']
             track_num = plotable_element['track_num']
             num_tracks = plotable_element['bar_height_in_tracks']
