@@ -2,7 +2,9 @@ import logging
 import os
 from calendar import month_name
 from datetime import date
+from functools import reduce
 
+import pandas as pd
 from pptx import Presentation
 from pptx.dml.color import RGBColor
 from pptx.enum.shapes import MSO_AUTO_SHAPE_TYPE
@@ -49,6 +51,9 @@ class PlanVisualiser:
 
         self.shapes = visual_slide.shapes
         self.plot_driver = PlotDriver(plot_config)
+
+        self.align_months()
+        self.plot_driver.num_days_in_date_range = self.plot_driver.max_end_date.toordinal() - self.plot_driver.min_start_date.toordinal()
 
         self.swimlanes = swimlanes
         self.swimlane_data = self.extract_swimlane_data()
@@ -367,8 +372,8 @@ class PlanVisualiser:
 
         :return:
         """
-        first_of_start_month = first_day_of_month(self.plot_config['min_start_date'])
-        first_of_end_month = first_day_of_month(self.plot_config['max_end_date'])
+        first_of_start_month = first_day_of_month(self.plot_driver.min_start_date)
+        first_of_end_month = first_day_of_month(self.plot_driver.max_end_date)
 
         for month_index, month_start_date in enumerate(iterate_months(first_of_start_month, num_months_between_dates(first_of_start_month, first_of_end_month))):
             left = self.plot_driver.date_to_x_coordinate(month_start_date)
@@ -449,3 +454,26 @@ class PlanVisualiser:
                 'end_track': end_track
             }
         return swimlane_plot_data
+
+    def align_months(self):
+        """
+        If earliest or latest dates haven't been specified explicitly, then calculate from plan data.
+        Then adjust to be first and last days of month respectively to ensure that month bar
+        aligns with configured plot area.
+
+        :return:
+        """
+
+        if pd.isnull(self.plot_driver.min_start_date):
+
+            start_dates = [record['start_date'] for record in self.plan_data]
+            self.plot_driver.min_start_date = reduce(lambda min_date, start_date: start_date if start_date < min_date else min_date, start_dates)
+
+        if pd.isnull(self.plot_driver.max_end_date):
+            end_dates = [record['end_date'] for record in self.plan_data]
+            self.plot_driver.max_end_date = reduce(lambda max_date, end_date: end_date if not pd.isnull(end_date) and end_date > max_date else max_date, end_dates)
+
+        # Regardless of whether start and end dates have been configured, we need to align with whole month
+        self.plot_driver.min_start_date = first_day_of_month(self.plot_driver.min_start_date)
+        self.plot_driver.max_end_date = last_day_of_month(self.plot_driver.max_end_date)
+

@@ -1,5 +1,7 @@
 from datetime import datetime
 
+import pandas as pd
+
 
 class PlotDriver:
     """
@@ -15,10 +17,24 @@ class PlotDriver:
         self.right = plot_config['right']
         self.track_height = plot_config['track_height']
         self.track_gap = plot_config['track_gap']
-        self.min_start_date = plot_config['min_start_date']
-        self.max_end_date = plot_config['max_end_date']
 
-        self.num_days_in_date_range = self.max_end_date.toordinal() - self.min_start_date.toordinal()
+        min_start_date = plot_config['min_start_date']
+        if pd.isnull(min_start_date):
+            self.min_start_date = None  # Will get calculated from plan data later
+        else:
+            self.min_start_date = min_start_date
+
+        max_end_date = plot_config['max_end_date']
+        if pd.isnull(max_end_date):
+            self.max_end_date = None  # Will get calculated from plan data later
+        else:
+            self.max_end_date = max_end_date
+
+        if self.min_start_date is None or self.max_end_date is None:
+            self.num_days_in_date_range = None
+        else:
+            self.num_days_in_date_range = self.max_end_date.toordinal() - self.min_start_date.toordinal()
+
         self.plot_area_width = self.right - self.left
 
     def date_to_x_coordinate(self, date):
