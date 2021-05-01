@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 
 
 class ExcelPlan:
@@ -50,8 +51,34 @@ class ExcelSmartsheetPlan:
         self.excel_format_config_sheet_name = excel_driver_config['excel_format_config_sheet_name']
         self.plan_start_row = excel_driver_config['plan_start_row']
 
-        self.xl_pd_object = pd.read_excel(excel_plan_file, engine='openpyxl', sheet_name=self.excel_plan_sheet_name)
-        # self.xl_pd_object = pd.ExcelFile(excel_plan_file)
+        read_cols =[
+            'Task Name',
+            'Visual Text',
+            'Duration',
+            'Start',
+            'Finish',
+            'Visual Flag',
+            'Visual Swimlane',
+            'Visual Track # Within Swimlane',
+            'Visual # Tracks To Cover',
+            'Text Layout',
+            'Format String',
+            'Done Format String'
+        ]
+
+        converters = {
+            'Visual Flag': ExcelSmartsheetPlan.bool_converter
+        }
+
+        pd_object_with_nan = pd.read_excel(
+            excel_plan_file,
+            engine='openpyxl',
+            sheet_name=self.excel_plan_sheet_name,
+            usecols=read_cols,
+            converters=converters
+        )
+        self.xl_pd_object = pd_object_with_nan
+        # ToDo: Decide how we are going to deal with NaNs
 
     def read_plan_data(self):
         milestones = self.xl_pd_object
@@ -62,7 +89,7 @@ class ExcelSmartsheetPlan:
 
         for index, milestone_data in milestones.iterrows():
             flag = milestone_data['Visual Flag']
-            if flag == 1:
+            if flag is True:
                 start_date = milestone_data['Start']
                 end_date = milestone_data['Finish']
                 duration = milestone_data['Duration']
@@ -87,8 +114,16 @@ class ExcelSmartsheetPlan:
                     'track_num': milestone_data['Visual Track # Within Swimlane'],
                     'bar_height_in_tracks': milestone_data['Visual # Tracks To Cover'],
                     'format_properties': milestone_data['Format String'],
+                    'done_format_properties': milestone_data['Done Format String'],
                     'text_layout': milestone_data['Text Layout']
                 }
                 plan_data.append(record)
 
         return plan_data
+
+    @staticmethod
+    def bool_converter(smartsheet_flag_value):
+        if smartsheet_flag_value is True:
+            return True
+        else:
+            return False

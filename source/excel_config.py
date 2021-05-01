@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 from pptx.util import Cm, Pt
 
 
@@ -7,7 +8,8 @@ class ExcelFormatConfig:
     Class to read configuration records from a sheet in an Excel File
     """
     def __init__(self, excel_path, excel_sheet, skip_rows=0):
-        self.records = pd.read_excel(excel_path, sheet_name= excel_sheet, engine='openpyxl', skiprows=skip_rows)
+        records_with_nan = pd.read_excel(excel_path, sheet_name= excel_sheet, engine='openpyxl', skiprows=skip_rows)
+        self.records = records_with_nan.replace(np.nan, None)
         # self.records = xl_pd_object.parse(excel_sheet, skiprows=skip_rows)
 
     def parse_format_config(self):
@@ -45,7 +47,8 @@ class ExcelPlotConfig:
     """
 
     def __init__(self, excel_path, excel_sheet, skip_rows=0):
-        self.records = pd.read_excel(excel_path, sheet_name=excel_sheet, engine='openpyxl', skiprows=skip_rows)
+        records_with_nan = pd.read_excel(excel_path, sheet_name=excel_sheet, engine='openpyxl', skiprows=skip_rows)
+        self.records = records_with_nan.replace(np.nan, None)
 
     def parse_plot_config(self):
         record = self.records.iloc[0]

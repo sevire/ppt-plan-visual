@@ -1,5 +1,7 @@
 import os
-from calendar import Calendar, day_name, month_name
+import numpy as np
+from calendar import month_name
+from datetime import date
 
 from pptx import Presentation
 from pptx.dml.color import RGBColor
@@ -9,7 +11,7 @@ from pptx.enum.text import MSO_VERTICAL_ANCHOR as MSO_ANCHOR
 from source.excel_plan import ExcelPlan, ExcelSmartsheetPlan
 from source.plot_driver import PlotDriver
 from source.utilities import get_path_name_ext, SwimlaneManager, first_day_of_month, iterate_months, \
-    num_months_between_dates, last_day_of_month, month_increment
+    num_months_between_dates, last_day_of_month, is_current, is_nan, is_future, is_past
 
 
 class PlanVisualiser:
@@ -36,9 +38,9 @@ class PlanVisualiser:
         # self.slide_level_config = slide_level_config
         #
         self.template = template_path
-
         folder, base, ext = get_path_name_ext(template_path)
         self.slides_out_path = os.path.join(folder, base + '_out' + ext)
+
         self.prs = Presentation(template_path)
 
         visual_slide = self.prs.slides[0]  # Assume there is one slide and that's where we will place the visual
@@ -48,26 +50,6 @@ class PlanVisualiser:
 
         self.swimlanes = swimlanes
         self.swimlane_data = self.extract_swimlane_data()
-
-    @classmethod
-    def from_excel(cls, plan_data_excel_path, plot_area_config, format_config, excel_driver_config, template_path, slide_level_config):
-        excel_manager = ExcelPlan(excel_driver_config, plan_data_excel_path)
-
-        extracted_plot_config = plot_area_config
-        extracted_format_config = format_config
-        extracted_plan_data = excel_manager.read_plan_data()
-
-        return PlanVisualiser(extracted_plan_data, extracted_plot_config, extracted_format_config, template_path, slide_level_config)
-
-    @classmethod
-    def from_excelsmartsheet(cls, plan_data_excel_path, plot_area_config, format_config, excel_driver_config, template_path, slide_level_config):
-        excel_manager = ExcelSmartsheetPlan(excel_driver_config, plan_data_excel_path)
-
-        extracted_plot_config = plot_area_config
-        extracted_format_config = format_config
-        extracted_plan_data = excel_manager.read_plan_data()
-
-        return PlanVisualiser(extracted_plan_data, extracted_plot_config, extracted_format_config, template_path, slide_level_config)
 
     def plot_slide(self):
         """
@@ -89,120 +71,104 @@ class PlanVisualiser:
             swimlane = plotable_element['swimlane']
             track_num = plotable_element['track_num']
             num_tracks = plotable_element['bar_height_in_tracks']
+
             shape_format_name = plotable_element['format_properties']
+            done_shape_format_name = plotable_element['done_format_properties']
             format_data = self.format_config['format_categories'][shape_format_name]
+            done_format_data = None if is_nan(done_shape_format_name) else self.format_config['format_categories'][done_shape_format_name]
+
             text_layout = plotable_element['text_layout']
             if plotable_element['type'] == 'bar':
-                self.plot_activity(description, start, end, swimlane, track_num, num_tracks, format_data, text_layout)
+                self.plot_activity(description, start, end, swimlane, track_num, num_tracks, format_data, text_layout, done_format_data)
 
             elif plotable_element['type'] == 'milestone':
                 self.plot_milestone(description, start, swimlane, track_num, format_data, text_layout)
 
         self.prs.save(self.slides_out_path)
 
-    def extract_swimlane_data(self):
-        """
-        After some thought am taking a very simple approach here.
-
-        Just go through each activity on the plan and:
-        - Check which swimlane it is for
-        - Look at the track number and height in tracks and therefore work out the bottom track number
-        - If the bottom track number is larger than that already recorded, update to reflect.
-        - Once you have checked every activity, the entry in each swimlane will have recorded the number of tracks
-          required for that swimlane.
-        - We can then go back and calculate the start and end track for each swimlane which is what the plot method
-          needs.  If a specific swimlane order is dictated then that is used here.  Where a swimlane doesn't appear in
-          the ordering then we just add it to the end.
-
-          So we will end up with a dict, with one entry for each (named) swimlane, and against each swimlane we will
-          see the start track number and the end track number.
-
-        :return:
-        """
-
-        swimlane_data = {}
-        swimlane_manager = SwimlaneManager(self.swimlanes)
-        for record in self.plan_data:
-            swimlane = record['swimlane']
-            track_num_high = record['track_num'] + record['bar_height_in_tracks'] - 1
-            if swimlane not in swimlane_data:
-                # Adding record for this swimlane. Also remember ordering as is important later.
-                swimlane_record = {
-                    'swimlane_number': swimlane_manager.get_swimlane_number(swimlane),
-                    'highest_track_within_lane': track_num_high
-                }
-                swimlane_data[swimlane] = swimlane_record
-            else:
-                swimlane_record = swimlane_data[swimlane]
-                if track_num_high > swimlane_record['highest_track_within_lane']:
-                    swimlane_record['highest_track_within_lane'] = track_num_high
-
-        # We now have a dict containing a record for each swimlane of lowest and highest relative track number used.
-        # Can now calculate the start and end track number for each swimlane - in order that lanes were encountered.
-
-        swimlane_plot_data = {}
-        end_track = 0
-
-        # Create list of swimlane data entries in order of swimlane number
-        sorted_entries = sorted(swimlane_data.items(), key=lambda x: x[1]['swimlane_number'])
-
-        # Calculate start and end track number for each swimlane based on number of tracks required for swimlane
-        for swimlane, swimlane_entry in sorted_entries:
-            start_track = end_track + 1
-            end_track = start_track + swimlane_entry['highest_track_within_lane'] - 1
-            swimlane_plot_data[swimlane] = {
-                'start_track': start_track,
-                'end_track': end_track
-            }
-        return swimlane_plot_data
-
-    def plot_shape(self, shape_type, left, top, width, height, text, text_layout, shape_properties):
-        shape = self.shapes.add_shape(
-            shape_type, left, top, width, height
-        )
-
-        # Adjust rounded corner radius
-        if shape_type == MSO_AUTO_SHAPE_TYPE.ROUNDED_RECTANGLE:
-            target_radius = shape_properties['corner_radius']
-            adjustment_value = target_radius / height
-            shape.adjustments[0] = adjustment_value
-
-        self.shape_fill(shape, shape_properties)
-        self.shape_line(shape, shape_properties)
-
-        activity_text_width = self.plot_config['activity_text_width']
-        if text_layout == 'Left':
-            # Extend the text to the left so that if overflows to the left of the shape.
-            adjust_width = max(width, activity_text_width)
-            text_left = left + width - adjust_width
-            text_width = activity_text_width
-            shape_properties['text_align'] = 'right'
-            self.plot_text(text, text_left, top, text_width, height, shape_properties)
-        elif text_layout == 'Right':
-            # Extend text to the right so that it overflows to the right of the shape
-            adjust_width = max(width, activity_text_width)
-            text_left = left
-            text_width = adjust_width
-            shape_properties['text_align'] = 'left'
-            self.plot_text(text, text_left, top, text_width, height, shape_properties)
-        else:  # Apply default which is "Shape"
-            # Standard positioning, text will align exactly with the shape
-            shape_properties['text_align'] = 'centre'
-            self.plot_text(text, left, top, width, height, shape_properties)
-
     def plot_activity(self, activity_description, start_date, end_date, swimlane, track_number, num_tracks,
-                      properties, text_layout):
-        swimlane_start = self.swimlane_data[swimlane]['start_track']
+                      todo_properties, text_layout, done_properties):
+        """
 
-        left = self.plot_driver.date_to_x_coordinate(start_date)
-        right = self.plot_driver.date_to_x_coordinate(end_date)
-        width = right - left
+        :param activity_description:
+        :param start_date:
+        :param end_date:
+        :param swimlane:
+        :param track_number:
+        :param num_tracks:
+        :param todo_properties:
+        :param text_layout:
+        :param done_properties:
+        :return:
+
+        Plots an activity on the slide (rather than a milestone)
+
+        Plots rectangle for the activity of the appropriate length based on the length of the activity and
+        places on the right track at the right horizontal position based on start date.
+
+        If a done_properties value has been provided then this is a task where we need to indicate any past
+        part of the activity as "Done" using the format provided to indicate that (typically this would be blue).
+
+        So if the activity is current (today's date is between start and end) we have to plot two
+        boxes of different colours, but if the activity is completely in the past we plot one box with the
+        done formatting.
+        """
+        swimlane_start = self.swimlane_data[swimlane]['start_track']
 
         top = self.plot_driver.track_number_to_y_coordinate(swimlane_start + track_number - 1)
         height = self.plot_driver.height_of_track(num_tracks)
 
-        self.plot_shape(MSO_AUTO_SHAPE_TYPE.ROUNDED_RECTANGLE, left, top, width, height, activity_description,
-                        text_layout, properties)
+        # There are three cases to consider.
+        # - There are no done_properties provided or the activity is wholly in the future
+        #   * One rectangle with todo_properties
+        # - There are done_properties provided and the activity is current
+        #   * One rectangle for done period with done_properties
+        #   * One rectangle for still to do period with todo_properties
+        # - There are done_properties provided and the activity is wholly in the past
+        #   * One rectangle with todo_properties
+
+        if done_properties is None or is_future(start_date, end_date):
+
+            # One rectangle with todo_properties
+            left = self.plot_driver.date_to_x_coordinate(start_date)
+            right = self.plot_driver.date_to_x_coordinate(end_date)
+            width = right - left
+            self.plot_shape(MSO_AUTO_SHAPE_TYPE.ROUNDED_RECTANGLE, left, top, width, height, todo_properties)
+
+        elif done_properties is not None and is_current(start_date, end_date):
+            # One rectangle for done period with done_properties
+            # One rectangle for still to do period with todo_properties
+
+            # Plot first (done) activity from start to today
+            done_left = self.plot_driver.date_to_x_coordinate(start_date)
+            done_right = self.plot_driver.date_to_x_coordinate(date.today())
+            done_width = done_right - done_left
+            self.plot_shape(MSO_AUTO_SHAPE_TYPE.ROUNDED_RECTANGLE, done_left, top, done_width, height, done_properties)
+
+            # Plot second activity from today to end
+            todo_left = self.plot_driver.date_to_x_coordinate(date.today())
+            todo_right = self.plot_driver.date_to_x_coordinate(end_date)
+            todo_width = todo_right - todo_left
+            self.plot_shape(MSO_AUTO_SHAPE_TYPE.ROUNDED_RECTANGLE, todo_left, top, todo_width, height, todo_properties)
+        elif done_properties is not None and is_past(start_date, end_date):
+            # NOTE this test should always be true if previous two tests false but this is belt and braces
+
+            # One rectangle with todo_properties
+            left = self.plot_driver.date_to_x_coordinate(start_date)
+            right = self.plot_driver.date_to_x_coordinate(end_date)
+            width = right - left
+            self.plot_shape(MSO_AUTO_SHAPE_TYPE.ROUNDED_RECTANGLE, left, top, width, height, done_properties)
+
+        else:
+            # Shouldn't get to here so raise an exception
+            raise Exception("Shouldn't get here")
+
+        # Text is same plot whether we are plotting as two activities or one
+        left = self.plot_driver.date_to_x_coordinate(start_date)
+        right = self.plot_driver.date_to_x_coordinate(end_date)
+        width = right - left
+
+        self.plot_text_for_shape(left, top, width, height, activity_description, todo_properties, text_layout)
 
     def plot_milestone(self, milestone_description, start_date, swimlane, track_number, properties, text_layout):
         swimlane_start = self.swimlane_data[swimlane]['start_track']
@@ -229,6 +195,41 @@ class PlanVisualiser:
             milestone_text_left = left - milestone_text_width
             properties['text_align'] = 'right'
             self.plot_text(milestone_description, milestone_text_left, top, milestone_text_width, milestone_height, properties)
+
+    def plot_shape(self, shape_type, left, top, width, height, shape_properties):
+        shape = self.shapes.add_shape(
+            shape_type, left, top, width, height
+        )
+
+        # Adjust rounded corner radius
+        if shape_type == MSO_AUTO_SHAPE_TYPE.ROUNDED_RECTANGLE:
+            target_radius = shape_properties['corner_radius']
+            adjustment_value = target_radius / height
+            shape.adjustments[0] = adjustment_value
+
+        self.shape_fill(shape, shape_properties)
+        self.shape_line(shape, shape_properties)
+
+    def plot_text_for_shape(self, left, top, width, height, text, shape_properties, text_layout):
+        activity_text_width = self.plot_config['activity_text_width']
+        if text_layout == 'Left':
+            # Extend the text to the left so that if overflows to the left of the shape.
+            adjust_width = max(width, activity_text_width)
+            text_left = left + width - adjust_width
+            text_width = activity_text_width
+            shape_properties['text_align'] = 'right'
+            self.plot_text(text, text_left, top, text_width, height, shape_properties)
+        elif text_layout == 'Right':
+            # Extend text to the right so that it overflows to the right of the shape
+            adjust_width = max(width, activity_text_width)
+            text_left = left
+            text_width = adjust_width
+            shape_properties['text_align'] = 'left'
+            self.plot_text(text, text_left, top, text_width, height, shape_properties)
+        else:  # Apply default which is "Shape"
+            # Standard positioning, text will align exactly with the shape
+            shape_properties['text_align'] = 'centre'
+            self.plot_text(text, left, top, width, height, shape_properties)
 
     def plot_text(self, text, left, top, width, height, format_data):
 
@@ -376,7 +377,80 @@ class PlanVisualiser:
 
             month = month_name[month_start_date.month][:3]
 
-            self.plot_shape(MSO_AUTO_SHAPE_TYPE.RECTANGLE, left, top, width, height, month, 'shape', shape_format)
+            self.plot_shape(MSO_AUTO_SHAPE_TYPE.RECTANGLE, left, top, width, height, shape_format)
 
+    @classmethod
+    def from_excel(cls, plan_data_excel_path, plot_area_config, format_config, excel_driver_config, template_path, slide_level_config):
+        excel_manager = ExcelPlan(excel_driver_config, plan_data_excel_path)
 
+        extracted_plot_config = plot_area_config
+        extracted_format_config = format_config
+        extracted_plan_data = excel_manager.read_plan_data()
 
+        return PlanVisualiser(extracted_plan_data, extracted_plot_config, extracted_format_config, template_path, slide_level_config)
+
+    @classmethod
+    def from_excelsmartsheet(cls, plan_data_excel_path, plot_area_config, format_config, excel_driver_config, template_path, slide_level_config):
+        excel_manager = ExcelSmartsheetPlan(excel_driver_config, plan_data_excel_path)
+
+        extracted_plot_config = plot_area_config
+        extracted_format_config = format_config
+        extracted_plan_data = excel_manager.read_plan_data()
+
+        return PlanVisualiser(extracted_plan_data, extracted_plot_config, extracted_format_config, template_path, slide_level_config)
+
+    def extract_swimlane_data(self):
+        """
+        After some thought am taking a very simple approach here.
+
+        Just go through each activity on the plan and:
+        - Check which swimlane it is for
+        - Look at the track number and height in tracks and therefore work out the bottom track number
+        - If the bottom track number is larger than that already recorded, update to reflect.
+        - Once you have checked every activity, the entry in each swimlane will have recorded the number of tracks
+          required for that swimlane.
+        - We can then go back and calculate the start and end track for each swimlane which is what the plot method
+          needs.  If a specific swimlane order is dictated then that is used here.  Where a swimlane doesn't appear in
+          the ordering then we just add it to the end.
+
+          So we will end up with a dict, with one entry for each (named) swimlane, and against each swimlane we will
+          see the start track number and the end track number.
+
+        :return:
+        """
+
+        swimlane_data = {}
+        swimlane_manager = SwimlaneManager(self.swimlanes)
+        for record in self.plan_data:
+            swimlane = record['swimlane']
+            track_num_high = record['track_num'] + record['bar_height_in_tracks'] - 1
+            if swimlane not in swimlane_data:
+                # Adding record for this swimlane. Also remember ordering as is important later.
+                swimlane_record = {
+                    'swimlane_number': swimlane_manager.get_swimlane_number(swimlane),
+                    'highest_track_within_lane': track_num_high
+                }
+                swimlane_data[swimlane] = swimlane_record
+            else:
+                swimlane_record = swimlane_data[swimlane]
+                if track_num_high > swimlane_record['highest_track_within_lane']:
+                    swimlane_record['highest_track_within_lane'] = track_num_high
+
+        # We now have a dict containing a record for each swimlane of lowest and highest relative track number used.
+        # Can now calculate the start and end track number for each swimlane - in order that lanes were encountered.
+
+        swimlane_plot_data = {}
+        end_track = 0
+
+        # Create list of swimlane data entries in order of swimlane number
+        sorted_entries = sorted(swimlane_data.items(), key=lambda x: x[1]['swimlane_number'])
+
+        # Calculate start and end track number for each swimlane based on number of tracks required for swimlane
+        for swimlane, swimlane_entry in sorted_entries:
+            start_track = end_track + 1
+            end_track = start_track + swimlane_entry['highest_track_within_lane'] - 1
+            swimlane_plot_data[swimlane] = {
+                'start_track': start_track,
+                'end_track': end_track
+            }
+        return swimlane_plot_data

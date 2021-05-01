@@ -1,5 +1,6 @@
 import os
 from calendar import monthrange
+from datetime import date
 
 from dateutil.relativedelta import relativedelta
 
@@ -33,6 +34,27 @@ def iterate_months(date, num_months):
     yield date
     for month in range(num_months):
         yield month_increment(date, month)
+
+
+def is_current(start_date, end_date):
+    today = date.today()
+    return start_date < today < end_date
+
+
+def is_past(start_date, end_date):
+    today = date.today()
+    return start_date < end_date < today
+
+
+def is_future(start_date, end_date):
+    today = date.today()
+    return today < start_date < end_date
+
+
+def is_nan(value: str):
+    # Uses property that nan != nan in pandas/numpy
+    ret_value = (value != value)
+    return ret_value
 
 
 class SwimlaneManager:
