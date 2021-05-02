@@ -129,3 +129,5 @@ dmypy.json
 .pyre/
 
 # Temp files from editing MS Office docs.
+/build/
+/dist/
