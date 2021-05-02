@@ -37,11 +37,11 @@ jobs:
     - name: Create command line app
       run: ./create_command_line_app.sh
     - name: Commit the newly created command line app file
-        run: |
-          git config --local user.email "tbg-github@genonline.co.uk"
-          git config --local user.name "sevire"
-          git add ppt_plot_plan_main
-          git commit -m "Add ppt_plot_plan_main to repo"
+      run: |
+        git config --local user.email "tbg-github@genonline.co.uk"
+        git config --local user.name "sevire"
+        git add ppt_plot_plan_main
+        git commit -m "Add ppt_plot_plan_main to repo"
     - name: Push changes
       uses: ad-m/github-push-action@master
       with:
