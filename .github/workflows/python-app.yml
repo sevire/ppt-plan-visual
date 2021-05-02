@@ -42,8 +42,9 @@ jobs:
         git config --local user.name "sevire"
         git add ppt_plot_plan_main
         git commit -m "Add ppt_plot_plan_main to repo"
-    - name: Push changes
-      uses: ad-m/github-push-action@master
-      with:
-        token: '${{ secrets.GITHUB_TOKEN }}'
-        force: true
+        git push
+#    - name: Push changes
+#      uses: ad-m/github-push-action@master
+#      with:
+#        token: '${{ secrets.GITHUB_TOKEN }}'
+#        force: true
