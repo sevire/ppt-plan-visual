@@ -25,6 +25,10 @@ def month_increment(date, num_months):
     return date + relativedelta(months=num_months)
 
 
+def day_increment(in_date, num_days):
+    return in_date + relativedelta(days=num_days)
+
+
 def num_months_between_dates(start_date, end_date):
     r = relativedelta(end_date, start_date)
     return r.years * 12 + r.months + 1
@@ -43,7 +47,7 @@ def is_current(start_date, end_date):
 
 def is_past(start_date, end_date):
     today = date.today()
-    return start_date < end_date < today
+    return start_date < end_date <= today
 
 
 def is_future(start_date, end_date):

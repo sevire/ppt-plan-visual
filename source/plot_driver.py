@@ -30,11 +30,6 @@ class PlotDriver:
         else:
             self.max_end_date = max_end_date
 
-        if self.min_start_date is None or self.max_end_date is None:
-            self.num_days_in_date_range = None
-        else:
-            self.num_days_in_date_range = self.max_end_date.toordinal() - self.min_start_date.toordinal()
-
         self.plot_area_width = self.right - self.left
 
     def date_to_x_coordinate(self, date):
