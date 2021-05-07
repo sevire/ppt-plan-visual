@@ -53,7 +53,7 @@ class PlotDriver:
             pass
         proportion_of_plot_width = num_days_from_min_date / self.num_days_in_date_range
         distance_from_left_of_plot_area = proportion_of_plot_width * self.plot_area_width
-        x_coord = self.left + distance_from_left_of_plot_area
+        x_coord = round(self.left + distance_from_left_of_plot_area)
 
         return x_coord
 

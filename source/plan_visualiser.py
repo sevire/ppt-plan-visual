@@ -7,7 +7,7 @@ from functools import reduce
 import pandas as pd
 from pptx import Presentation
 from pptx.dml.color import RGBColor
-from pptx.enum.shapes import MSO_AUTO_SHAPE_TYPE
+from pptx.enum.shapes import MSO_AUTO_SHAPE_TYPE, MSO_CONNECTOR_TYPE
 from pptx.enum.text import PP_PARAGRAPH_ALIGNMENT as PP_ALIGN
 from pptx.enum.text import MSO_VERTICAL_ANCHOR as MSO_ANCHOR
 from source.excel_plan import ExcelPlan
@@ -100,6 +100,7 @@ class PlanVisualiser:
             elif plotable_element['type'] == 'milestone':
                 self.plot_milestone(description, start, swimlane, track_num, format_data, text_layout)
 
+        self.plot_vertical_line(date.today())
         self.prs.save(self.slides_out_path)
 
     def plot_activity(self, activity_description, start_date, end_date, swimlane, track_number, num_tracks,
@@ -493,3 +494,11 @@ class PlanVisualiser:
 
         return left, right, width
 
+    def plot_vertical_line(self, date):
+        x = self.plot_driver.date_to_x_coordinate(date)
+        top = self.plot_config['top']
+        bottom = self.plot_config['bottom']
+        line = self.shapes.add_connector(MSO_CONNECTOR_TYPE.STRAIGHT, x, top, x, bottom)
+        today_line_format = self.format_config['today_line']
+        today_line_colour = today_line_format['line_rgb']
+        line.line.color.rgb = RGBColor(*today_line_colour)
