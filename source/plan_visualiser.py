@@ -193,12 +193,14 @@ class PlanVisualiser:
             milestone_text_width = self.plot_config['milestone_text_width']
             milestone_text_left = left + milestone_width
             properties['text_align'] = 'left'
-            self.plot_text(milestone_description, milestone_text_left, top, milestone_text_width, milestone_height, properties)
+            self.plot_text(milestone_description, milestone_text_left, top, milestone_text_width, milestone_height,
+                           properties, text_layout)
         else:  # Default is left
             milestone_text_width = self.plot_config['milestone_text_width']
             milestone_text_left = left - milestone_text_width
             properties['text_align'] = 'right'
-            self.plot_text(milestone_description, milestone_text_left, top, milestone_text_width, milestone_height, properties)
+            self.plot_text(milestone_description, milestone_text_left, top, milestone_text_width, milestone_height,
+                           properties, text_layout)
 
     def plot_shape(self, shape_type, left, top, width, height, shape_properties):
         shape = self.shapes.add_shape(
@@ -222,20 +224,20 @@ class PlanVisualiser:
             text_left = left + width - adjust_width
             text_width = activity_text_width
             shape_properties['text_align'] = 'right'
-            self.plot_text(text, text_left, top, text_width, height, shape_properties)
+            self.plot_text(text, text_left, top, text_width, height, shape_properties, text_layout)
         elif text_layout == 'Right':
             # Extend text to the right so that it overflows to the right of the shape
             adjust_width = max(width, activity_text_width)
             text_left = left
             text_width = adjust_width
             shape_properties['text_align'] = 'left'
-            self.plot_text(text, text_left, top, text_width, height, shape_properties)
+            self.plot_text(text, text_left, top, text_width, height, shape_properties, text_layout)
         else:  # Apply default which is "Shape"
             # Standard positioning, text will align exactly with the shape
             shape_properties['text_align'] = 'centre'
-            self.plot_text(text, left, top, width, height, shape_properties)
+            self.plot_text(text, left, top, width, height, shape_properties, text_layout)
 
-    def plot_text(self, text, left, top, width, height, format_data):
+    def plot_text(self, text, left, top, width, height, format_data, text_layout):
 
         shape = self.shapes.add_shape(
             MSO_AUTO_SHAPE_TYPE.RECTANGLE, left, top, width, height
@@ -243,14 +245,21 @@ class PlanVisualiser:
         shape.fill.background()
         shape.line.fill.background()
 
-        self.add_text_to_shape(shape, text, format_data)
+        self.add_text_to_shape(shape, text, format_data, text_layout)
 
-    def add_text_to_shape(self, shape, text, format_data):
+    def add_text_to_shape(self, shape, text, format_data, text_layout):
         text_frame = shape.text_frame
-        text_frame.margin_left = 0
-        text_frame.margin_right = 0
+
         text_frame.margin_top = 0
         text_frame.margin_bottom = 0
+        text_frame.margin_left = 0
+        text_frame.margin_right = 0
+
+        # Adjust text margin depending upon positioning. To help readability by having small gap
+        if text_layout == "Left":
+            text_frame.margin_right = self.plot_config['text_margin']
+        elif text_layout == "Right":
+            text_frame.margin_left = self.plot_config['text_margin']
 
         vertical = format_data['text_vertical_align']
         if vertical == "top":
@@ -354,7 +363,7 @@ class PlanVisualiser:
 
             self.shape_fill(shape, format_info)
             self.shape_line(shape, format_info)
-            self.add_text_to_shape(shape, swimlane, format_info)
+            self.add_text_to_shape(shape, swimlane, format_info, "")
 
     def plot_month_bar(self):
         """

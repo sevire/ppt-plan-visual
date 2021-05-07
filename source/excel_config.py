@@ -79,6 +79,7 @@ class ExcelPlotConfig:
             'milestone_width': Cm(record['Milestone Width']),
             'milestone_text_width': Cm(record['Milestone Text Width']),
             'activity_text_width': Cm(record['Activity Text Width']),
+            'text_margin': Cm(record['Text Margin']),
         }
         return plot_area_config
 

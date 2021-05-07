@@ -55,6 +55,7 @@ class ExcelPlan:
                 track_num = milestone_data['Visual Track # Within Swimlane']
                 num_tracks = milestone_data['Visual # Tracks To Cover']
                 format_properties = milestone_data['Format String']
+                text_layout = milestone_data['Text Layout']
 
                 # Pre-processing and setting defaults for missing values
 
@@ -86,6 +87,22 @@ class ExcelPlan:
                     root_logger.warning(f'Format name not specific for [{description:40.40}], setting to "Default"')
                     format_properties = 'Default'
 
+                if pd.isnull(text_layout):
+                    # Text layout isn't specified, so:
+                    # - if it's a milestone position to left
+                    # - if it's an activity, position within shape
+
+                    if activity_type == "milestone":
+                        root_logger.warning(f'Text layout for {activity_type} not specified for [{description:40.40}], setting to "Left"')
+                        text_layout = 'Left'
+                    elif activity_type == "bar":
+                        root_logger.warning(f'Text layout for {activity_type} not specific for [{description:40.40}], setting to "Shape"')
+                        text_layout = 'Shape'
+                    else:
+                        root_logger.warning(f'Text layout not specific for [{description:40.40}], setting to "Left"')
+                        raise Exception(f'Unknown value for activity_type ({activity_type})')
+
+
                 record = {
                     'id': index,
                     'description': text,
@@ -97,7 +114,7 @@ class ExcelPlan:
                     'bar_height_in_tracks': num_tracks,
                     'format_properties': format_properties,
                     'done_format_properties': milestone_data['Done Format String'],
-                    'text_layout': milestone_data['Text Layout']
+                    'text_layout': text_layout
                 }
                 plan_data.append(record)
 
