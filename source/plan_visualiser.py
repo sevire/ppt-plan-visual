@@ -256,6 +256,10 @@ class PlanVisualiser:
         text_frame.margin_right = 0
 
         # Adjust text margin depending upon positioning. To help readability by having small gap
+        if text_layout == "swimlane":
+            # Hard-coded case for swimlanes as isn't driven by configuration
+            text_frame.margin_top = self.plot_config['text_margin']
+            text_frame.margin_left = self.plot_config['text_margin']
         if text_layout == "Left":
             text_frame.margin_right = self.plot_config['text_margin']
         elif text_layout == "Right":
@@ -363,7 +367,7 @@ class PlanVisualiser:
 
             self.shape_fill(shape, format_info)
             self.shape_line(shape, format_info)
-            self.add_text_to_shape(shape, swimlane, format_info, "")
+            self.add_text_to_shape(shape, swimlane, format_info, "swimlane")
 
     def plot_month_bar(self):
         """
