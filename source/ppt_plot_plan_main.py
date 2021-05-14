@@ -8,6 +8,42 @@ from source.plan_visualiser import PlanVisualiser
 
 root_logger = logging.getLogger()
 
+# No args provided so use hard-coded defaults
+parameters_01 = {
+    'excel_plan_file': '/Users/livestockinformation/Downloads/UK-View Plan.xlsx',
+    'excel_plan_sheet': 'UK-View Plan',
+    'excel_plot_cfg_file': '/Users/livestockinformation/Livestock Information Ltd/Data - UK Data/UK View/planning/planning-visual/PlanningVisualConfig-01.xlsx',
+    'excel_plot_cfg_sheet': 'PlotConfig',
+    'excel_format_cfg_file': '/Users/livestockinformation/Livestock Information Ltd/Data - UK Data/UK View/planning/planning-visual/PlanningVisualConfig-01.xlsx',
+    'excel_format_cfg_sheet': 'FormatConfig',
+    'swimlanes_cfg_file': '/Users/livestockinformation/Livestock Information Ltd/Data - UK Data/UK View/planning/planning-visual/PlanningVisualConfig-01.xlsx',
+    'swimlanes_cfg_sheet': 'Swimlanes',
+    'ppt_template_file': '/Users/livestockinformation/Livestock Information Ltd/Data - UK Data/UK View/planning/planning-visual/UK-ViewPlanOnePager.pptx',
+}
+parameters_02 = {
+    'excel_plan_file': '/Users/livestockinformation/Downloads/LI-DeliveryScenarios.xlsx',
+    'excel_plan_sheet': 'LI-DeliveryScenarios',
+    'excel_plot_cfg_file': '/Users/livestockinformation/Livestock Information Ltd/Data - UK data/UK View/planning/planning-visual/UKV-ScenariosConfig.xlsx',
+    'excel_plot_cfg_sheet': 'PlotConfig',
+    'excel_format_cfg_file': '/Users/livestockinformation/Livestock Information Ltd/Data - UK data/UK View/planning/planning-visual/UKV-ScenariosConfig.xlsx',
+    'excel_format_cfg_sheet': 'FormatConfig',
+    'swimlanes_cfg_file': '/Users/livestockinformation/Livestock Information Ltd/Data - UK data/UK View/planning/planning-visual/UKV-ScenariosConfig.xlsx',
+    'swimlanes_cfg_sheet': 'Swimlanes',
+    'ppt_template_file': '/Users/livestockinformation/Livestock Information Ltd/Data - UK data/UK View/planning/planning-visual/UKV-ScenariosTemplate.pptx',
+}
+
+parameters_03 = {
+    'excel_plan_file': '/Users/livestockinformation/Downloads/KBT-Plan.xlsx',
+    'excel_plan_sheet': 'KBT-Plan',
+    'excel_plot_cfg_file': '/Users/livestockinformation/Livestock Information Ltd/Added Value - Knowledge-Based Trading/Planning/Thomas/KBT-VisualConfig.xlsx',
+    'excel_plot_cfg_sheet': 'PlotConfig',
+    'excel_format_cfg_file': '/Users/livestockinformation/Livestock Information Ltd/Added Value - Knowledge-Based Trading/Planning/Thomas/KBT-VisualConfig.xlsx',
+    'excel_format_cfg_sheet': 'FormatConfig',
+    'swimlanes_cfg_file': '/Users/livestockinformation/Livestock Information Ltd/Added Value - Knowledge-Based Trading/Planning/Thomas/KBT-VisualConfig.xlsx',
+    'swimlanes_cfg_sheet': 'Swimlanes',
+    'ppt_template_file': '/Users/livestockinformation/Livestock Information Ltd/Added Value - Knowledge-Based Trading/Planning/Thomas/KBT-PlanOnePager.pptx',
+}
+
 
 def get_parameters():
     args = sys.argv
@@ -15,19 +51,7 @@ def get_parameters():
     # Note the length of argv is one more than the number of arguments as the file is always first.
 
     if len(args) == 1:
-        # No args provided so use hard-coded defaults
-        parameters = {
-            'excel_plan_file': '/Users/livestockinformation/Downloads/UK-View Plan.xlsx',
-            'excel_plan_sheet': 'UK-View Plan',
-            'excel_plot_cfg_file': '/Users/livestockinformation/Livestock Information Ltd/Data - UK Data/UK View/planning/planning-visual/PlanningVisualConfig-01.xlsx',
-            'excel_plot_cfg_sheet': 'PlotConfig',
-            'excel_format_cfg_file': '/Users/livestockinformation/Livestock Information Ltd/Data - UK Data/UK View/planning/planning-visual/PlanningVisualConfig-01.xlsx',
-            'excel_format_cfg_sheet': 'FormatConfig',
-            'swimlanes_cfg_file': '/Users/livestockinformation/Livestock Information Ltd/Data - UK Data/UK View/planning/planning-visual/PlanningVisualConfig-01.xlsx',
-            'swimlanes_cfg_sheet': 'Swimlanes',
-            'ppt_template_file': '/Users/livestockinformation/Livestock Information Ltd/Data - UK Data/UK View/planning/planning-visual/UK-ViewPlanOnePager.pptx',
-        }
-        return parameters
+        return parameters_03
 
     if len(args) == 8:
         parameters = {
