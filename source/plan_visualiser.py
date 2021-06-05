@@ -13,7 +13,7 @@ from pptx.enum.text import MSO_VERTICAL_ANCHOR as MSO_ANCHOR
 from source.excel_plan import ExcelPlan
 from source.plot_driver import PlotDriver
 from source.utilities import get_path_name_ext, SwimlaneManager, first_day_of_month, iterate_months, \
-    num_months_between_dates, last_day_of_month, is_current, is_nan, is_future, is_past, day_increment
+    num_months_between_dates, last_day_of_month, is_current, is_nan, is_future, is_past
 
 root_logger = logging.getLogger()
 
@@ -145,7 +145,7 @@ class PlanVisualiser:
         #   * One rectangle with todo_properties
 
         if done_properties is None or is_future(start_date, end_date):
-            left, right, width = self.shape_parameters(start_date, end_date)
+            left, right, width = self.plot_driver.shape_parameters(start_date, end_date)
 
             self.plot_shape(MSO_AUTO_SHAPE_TYPE.ROUNDED_RECTANGLE, left, top, width, height, todo_properties)
 
@@ -153,16 +153,18 @@ class PlanVisualiser:
             # One rectangle for done period with done_properties
             # One rectangle for still to do period with todo_properties
 
-            done_left, done_right, done_width = self.shape_parameters(start_date, date.today(), gap_flag=False)
+            done_left, done_right, done_width = self.plot_driver.shape_parameters(start_date, date.today(),
+                                                                                  gap_flag=False)
             self.plot_shape(MSO_AUTO_SHAPE_TYPE.ROUNDED_RECTANGLE, done_left, top, done_width, height, done_properties)
 
-            todo_left, todo_right, todo_width = self.shape_parameters(date.today(), end_date, gap_flag=True)
+            todo_left, todo_right, todo_width = self.plot_driver.shape_parameters(date.today(), end_date,
+                                                                                  gap_flag=True)
             self.plot_shape(MSO_AUTO_SHAPE_TYPE.ROUNDED_RECTANGLE, todo_left, top, todo_width, height, todo_properties)
         elif done_properties is not None and is_past(start_date, end_date):
             # NOTE this test should always be true if previous two tests false but this is belt and braces
 
             # One rectangle with todo_properties
-            left, right, width = self.shape_parameters(start_date, date.today())
+            left, right, width = self.plot_driver.shape_parameters(start_date, date.today())
 
             self.plot_shape(MSO_AUTO_SHAPE_TYPE.ROUNDED_RECTANGLE, left, top, width, height, done_properties)
 
@@ -171,7 +173,7 @@ class PlanVisualiser:
             raise Exception("Shouldn't get here")
 
         # Text is same plot whether we are plotting as two activities or one
-        left, right, width = self.shape_parameters(start_date, end_date)
+        left, right, width = self.plot_driver.shape_parameters(start_date, end_date)
         self.plot_text_for_shape(left, top, width, height, activity_description, todo_properties, text_layout)
 
     def plot_milestone(self, milestone_description, start_date, swimlane, track_number, properties, text_layout):
@@ -179,7 +181,7 @@ class PlanVisualiser:
         milestone_width = self.plot_config['milestone_width']
         milestone_height = self.plot_config['track_height']
 
-        left = self.plot_driver.date_to_x_coordinate(start_date) - milestone_width / 2
+        left = self.plot_driver.milestone_left(start_date, milestone_width)
         top = self.plot_driver.track_number_to_y_coordinate(swimlane_start + track_number - 1)
 
         shape = self.shapes.add_shape(
@@ -385,7 +387,8 @@ class PlanVisualiser:
             # right = self.plot_driver.date_to_x_coordinate(day_increment(last_day_of_month(month_start_date), 1))
             # width = right - left
 
-            left, right, width = self.shape_parameters(month_start_date, last_day_of_month(month_start_date), gap_flag=False)
+            left, right, width = self.plot_driver.shape_parameters(month_start_date,
+                                                                   last_day_of_month(month_start_date), gap_flag=False)
 
             height = (self.plot_config['track_height'] * 1)
             top = self.plot_config['top'] - height
@@ -483,29 +486,6 @@ class PlanVisualiser:
         # Regardless of whether start and end dates have been configured, we need to align with whole month
         self.plot_driver.min_start_date = first_day_of_month(self.plot_driver.min_start_date)
         self.plot_driver.max_end_date = last_day_of_month(self.plot_driver.max_end_date)
-
-    def shape_parameters(self, start_date, end_date, gap_flag=True):
-        """
-        Calculates the (x-axis) parameters required for plotting a shape based on a start and end date.
-        To allow a visible but very small gap between activities, the right hand edge is brought in by a fixed number of
-        units, but to allow for cases where this isn't desirable (e.g. when plotting month bars or the done and to do
-        parts of an activity, when gap_flag is False this adjustment won't be made.
-
-        :param start_date:
-        :param end_date:
-        :param gap_flag:
-        :return:
-        """
-        if gap_flag is True:
-            gap_increment = 15000
-        else:
-            gap_increment = 0
-
-        left = self.plot_driver.date_to_x_coordinate(start_date)
-        right = self.plot_driver.date_to_x_coordinate(day_increment(end_date, 1)) - gap_increment
-        width = right - left
-
-        return left, right, width
 
     def plot_vertical_line(self, date):
         x = self.plot_driver.date_to_x_coordinate(date)

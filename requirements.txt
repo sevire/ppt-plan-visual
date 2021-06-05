@@ -1,3 +1,4 @@
+ddt
 altgraph==0.17
 et-xmlfile==1.0.1
 importlib-metadata==4.0.1
