@@ -44,6 +44,8 @@ parameters_03 = {
     'ppt_template_file': '/Users/livestockinformation/Livestock Information Ltd/Added Value - Knowledge-Based Trading/Planning/Thomas/KBT-PlanOnePager.pptx',
 }
 
+parameters_to_use = parameters_01  # Set to whichever we are testing with or running.
+
 
 def get_parameters():
     args = sys.argv
@@ -51,7 +53,7 @@ def get_parameters():
     # Note the length of argv is one more than the number of arguments as the file is always first.
 
     if len(args) == 1:
-        return parameters_03
+        return parameters_to_use
 
     if len(args) == 8:
         parameters = {
