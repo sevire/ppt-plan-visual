@@ -10,7 +10,6 @@ class ExcelFormatConfig:
     def __init__(self, excel_path, excel_sheet, skip_rows=0):
         records_with_nan = pd.read_excel(excel_path, sheet_name= excel_sheet, engine='openpyxl', skiprows=skip_rows)
         self.records = records_with_nan.replace(np.nan, None)
-        # self.records = xl_pd_object.parse(excel_sheet, skiprows=skip_rows)
 
     def parse_format_config(self):
         format_config_records = {}

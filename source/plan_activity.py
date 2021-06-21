@@ -1,5 +1,6 @@
 from datetime import date
 from source.common_display_attributes import VisualElementDisplayAttributes
+from source.visual_element_shape import VisualElementShape
 
 
 class PlanActivity:
