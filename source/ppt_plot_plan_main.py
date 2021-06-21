@@ -9,40 +9,41 @@ from source.plan_visualiser import PlanVisualiser
 root_logger = logging.getLogger()
 
 # No args provided so use hard-coded defaults
-parameters_01 = {
-    'excel_plan_file': '/Users/livestockinformation/Downloads/UK-View Plan.xlsx',
-    'excel_plan_sheet': 'UK-View Plan',
-    'excel_plot_cfg_file': '/Users/livestockinformation/Livestock Information Ltd/Data - UK Data/UK View/planning/planning-visual/PlanningVisualConfig-01.xlsx',
-    'excel_plot_cfg_sheet': 'PlotConfig',
-    'excel_format_cfg_file': '/Users/livestockinformation/Livestock Information Ltd/Data - UK Data/UK View/planning/planning-visual/PlanningVisualConfig-01.xlsx',
-    'excel_format_cfg_sheet': 'FormatConfig',
-    'swimlanes_cfg_file': '/Users/livestockinformation/Livestock Information Ltd/Data - UK Data/UK View/planning/planning-visual/PlanningVisualConfig-01.xlsx',
-    'swimlanes_cfg_sheet': 'Swimlanes',
-    'ppt_template_file': '/Users/livestockinformation/Livestock Information Ltd/Data - UK Data/UK View/planning/planning-visual/UK-ViewPlanOnePager.pptx',
-}
-parameters_02 = {
-    'excel_plan_file': '/Users/livestockinformation/Downloads/LI-DeliveryScenarios.xlsx',
-    'excel_plan_sheet': 'LI-DeliveryScenarios',
-    'excel_plot_cfg_file': '/Users/livestockinformation/Livestock Information Ltd/Data - UK data/UK View/planning/planning-visual/UKV-ScenariosConfig.xlsx',
-    'excel_plot_cfg_sheet': 'PlotConfig',
-    'excel_format_cfg_file': '/Users/livestockinformation/Livestock Information Ltd/Data - UK data/UK View/planning/planning-visual/UKV-ScenariosConfig.xlsx',
-    'excel_format_cfg_sheet': 'FormatConfig',
-    'swimlanes_cfg_file': '/Users/livestockinformation/Livestock Information Ltd/Data - UK data/UK View/planning/planning-visual/UKV-ScenariosConfig.xlsx',
-    'swimlanes_cfg_sheet': 'Swimlanes',
-    'ppt_template_file': '/Users/livestockinformation/Livestock Information Ltd/Data - UK data/UK View/planning/planning-visual/UKV-ScenariosTemplate.pptx',
-}
 
-parameters_03 = {
-    'excel_plan_file': '/Users/livestockinformation/Downloads/KBT-Plan.xlsx',
-    'excel_plan_sheet': 'KBT-Plan',
-    'excel_plot_cfg_file': '/Users/livestockinformation/Livestock Information Ltd/Added Value - Knowledge-Based Trading/Planning/Thomas/KBT-VisualConfig.xlsx',
+parameters_01 = {
+    'excel_plan_file': '/Users/thomasdeveloper/Documents/Projects/ppt-plan-visual-data/UK-View Plan.xlsx',
+    'excel_plan_sheet': 'UK-View Plan',
+    'excel_plot_cfg_file': '/Users/thomasdeveloper/Documents/Projects/ppt-plan-visual-data/PlanningVisualConfig-01.xlsx',
     'excel_plot_cfg_sheet': 'PlotConfig',
-    'excel_format_cfg_file': '/Users/livestockinformation/Livestock Information Ltd/Added Value - Knowledge-Based Trading/Planning/Thomas/KBT-VisualConfig.xlsx',
+    'excel_format_cfg_file': '/Users/thomasdeveloper/Documents/Projects/ppt-plan-visual-data/PlanningVisualConfig-01.xlsx',
     'excel_format_cfg_sheet': 'FormatConfig',
-    'swimlanes_cfg_file': '/Users/livestockinformation/Livestock Information Ltd/Added Value - Knowledge-Based Trading/Planning/Thomas/KBT-VisualConfig.xlsx',
+    'swimlanes_cfg_file': '/Users/thomasdeveloper/Documents/Projects/ppt-plan-visual-data/PlanningVisualConfig-01.xlsx',
     'swimlanes_cfg_sheet': 'Swimlanes',
-    'ppt_template_file': '/Users/livestockinformation/Livestock Information Ltd/Added Value - Knowledge-Based Trading/Planning/Thomas/KBT-PlanOnePager.pptx',
+    'ppt_template_file': '/Users/thomasdeveloper/Documents/Projects/ppt-plan-visual-data/UK-ViewPlanOnePager.pptx',
 }
+# parameters_02 = {
+#     'excel_plan_file': '/Users/livestockinformation/Downloads/LI-DeliveryScenarios.xlsx',
+#     'excel_plan_sheet': 'LI-DeliveryScenarios',
+#     'excel_plot_cfg_file': '/Users/livestockinformation/Livestock Information Ltd/Data - UK data/UK View/planning/planning-visual/UKV-ScenariosConfig.xlsx',
+#     'excel_plot_cfg_sheet': 'PlotConfig',
+#     'excel_format_cfg_file': '/Users/livestockinformation/Livestock Information Ltd/Data - UK data/UK View/planning/planning-visual/UKV-ScenariosConfig.xlsx',
+#     'excel_format_cfg_sheet': 'FormatConfig',
+#     'swimlanes_cfg_file': '/Users/livestockinformation/Livestock Information Ltd/Data - UK data/UK View/planning/planning-visual/UKV-ScenariosConfig.xlsx',
+#     'swimlanes_cfg_sheet': 'Swimlanes',
+#     'ppt_template_file': '/Users/livestockinformation/Livestock Information Ltd/Data - UK data/UK View/planning/planning-visual/UKV-ScenariosTemplate.pptx',
+# }
+#
+# parameters_03 = {
+#     'excel_plan_file': '/Users/livestockinformation/Downloads/KBT-Plan.xlsx',
+#     'excel_plan_sheet': 'KBT-Plan',
+#     'excel_plot_cfg_file': '/Users/livestockinformation/Livestock Information Ltd/Added Value - Knowledge-Based Trading/Planning/Thomas/KBT-VisualConfig.xlsx',
+#     'excel_plot_cfg_sheet': 'PlotConfig',
+#     'excel_format_cfg_file': '/Users/livestockinformation/Livestock Information Ltd/Added Value - Knowledge-Based Trading/Planning/Thomas/KBT-VisualConfig.xlsx',
+#     'excel_format_cfg_sheet': 'FormatConfig',
+#     'swimlanes_cfg_file': '/Users/livestockinformation/Livestock Information Ltd/Added Value - Knowledge-Based Trading/Planning/Thomas/KBT-VisualConfig.xlsx',
+#     'swimlanes_cfg_sheet': 'Swimlanes',
+#     'ppt_template_file': '/Users/livestockinformation/Livestock Information Ltd/Added Value - Knowledge-Based Trading/Planning/Thomas/KBT-PlanOnePager.pptx',
+# }
 
 parameters_to_use = parameters_01  # Set to whichever we are testing with or running.
 
@@ -80,7 +81,7 @@ def configure_logger(logger):
     time_string = time.strftime("%Y-%m-%d_%H:%M:%S", ts)
 
     # Probably doesn't need to rotate files as the log file is always created each time the app is run.
-    file_handler = RotatingFileHandler(f"{'/Users/livestockinformation/PycharmProjects/ppt-plan-visual/logging'}/{'plan_to_ppt'}-{time_string}.log")
+    file_handler = RotatingFileHandler(f"{'/Users/thomasdeveloper/Documents/Projects/ppt-plan-visual/logging'}/{'plan_to_ppt'}-{time_string}.log")
     file_handler.setFormatter(log_formatter)
     logger.addHandler(file_handler)
 
