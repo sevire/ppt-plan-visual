@@ -10,10 +10,15 @@ from pptx.dml.color import RGBColor
 from pptx.enum.shapes import MSO_AUTO_SHAPE_TYPE, MSO_CONNECTOR_TYPE
 from pptx.enum.text import PP_PARAGRAPH_ALIGNMENT as PP_ALIGN
 from pptx.enum.text import MSO_VERTICAL_ANCHOR as MSO_ANCHOR
+
+from source.common_display_attributes import VisualElementDisplayAttributes
 from source.excel_plan import ExcelPlan
+from source.layout_attributes import LayoutAttributes
+from source.plan_activity import PlanActivity
 from source.plot_driver import PlotDriver
 from source.utilities import get_path_name_ext, SwimlaneManager, first_day_of_month, iterate_months, \
     num_months_between_dates, last_day_of_month, is_current, is_nan, is_future, is_past
+from source.visual_element_shape import VisualElementShape
 
 root_logger = logging.getLogger()
 
@@ -95,7 +100,46 @@ class PlanVisualiser:
 
             text_layout = plotable_element['text_layout']
             if plotable_element['type'] == 'bar':
-                self.plot_activity(description, start, end, swimlane, track_num, num_tracks, format_data, text_layout, done_format_data)
+                layout_attributes = LayoutAttributes(swimlane, track_num, num_tracks)
+                display_attributes = VisualElementDisplayAttributes.from_dict(format_data)
+                if done_format_data is None:
+                    done_display_attributes = None
+                else:
+                    done_display_attributes = VisualElementDisplayAttributes.from_dict(done_format_data)
+                activity = PlanActivity(
+                    start,
+                    end,
+                    layout_attributes,
+                    display_attributes,
+                    VisualElementShape.ROUNDED_RECTANGLE,
+                    self.plot_driver,
+                    self.swimlane_data,
+                    done_display_attributes
+                )
+                plot = False
+                top = None
+                height = None
+
+                coords = activity.get_ppt_plot_coords()
+                if coords is not None:
+                    plot = True
+                    top = coords[1]  # Refactor to set top properly
+                    height = coords[3]  # Refactor to set height properly
+                    self.plot_shape(MSO_AUTO_SHAPE_TYPE.ROUNDED_RECTANGLE, *coords, format_data)
+
+                if activity.include_done is True:
+                    done_coords = activity.get_ppt_plot_coords(done_flag=True)
+                    if coords is not None:
+                        plot = True
+                        top = coords[1]  # Refactor to set top properly
+                        height = coords[3]  # Refactor to set height properly
+                        self.plot_shape(MSO_AUTO_SHAPE_TYPE.ROUNDED_RECTANGLE, *done_coords, format_data)
+
+                if plot is True:
+                    # Text is same plot whether we are plotting as two activities or one
+                    left, right, width = self.plot_driver.shape_parameters(activity.start_date, activity.end_date)
+                    self.plot_text_for_shape(left, top, width, height, description, format_data, text_layout)
+        # self.plot_activity(description, start, end, swimlane, track_num, num_tracks, format_data, text_layout, done_format_data)
 
             elif plotable_element['type'] == 'milestone':
                 self.plot_milestone(description, start, swimlane, track_num, format_data, text_layout)
@@ -205,6 +249,13 @@ class PlanVisualiser:
                            properties, text_layout)
 
     def plot_shape(self, shape_type, left, top, width, height, shape_properties):
+        assert (left >= 0)
+        assert (top >= 0)
+        assert (width >= 0)
+        assert (height >= 0)
+
+        root_logger.debug(f'Plotting shape: type={shape_type}')
+        root_logger.debug(f'Plotting shape: (left, top, width, height)={left},{top},{width},{height}')
         shape = self.shapes.add_shape(
             shape_type, left, top, width, height
         )

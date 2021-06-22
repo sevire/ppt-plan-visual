@@ -1,6 +1,7 @@
 from datetime import datetime
 
 import pandas as pd
+from dateutil.utils import today
 
 from source.utilities import day_increment
 
@@ -8,7 +9,6 @@ from source.utilities import day_increment
 class PlotDriver:
     """
     Used to translate plan type data into data which can be used to plot shapes.
-
     Example - convert from a date to a horizontal position on the slide.
 
     """
@@ -19,6 +19,11 @@ class PlotDriver:
         self.right = plot_config['right']
         self.track_height = plot_config['track_height']
         self.track_gap = plot_config['track_gap']
+
+        if 'today' in plot_config:
+            self.today = plot_config['today']
+        else:
+            self.today = today()
 
         min_start_date = plot_config['min_start_date']
         if pd.isnull(min_start_date):
@@ -56,10 +61,10 @@ class PlotDriver:
         return x_coord
 
     def track_number_to_y_coordinate(self, track_num):
-        return self.top + (track_num - 1) * (self.track_height + self.track_gap)
+        return round(self.top + (track_num - 1) * (self.track_height + self.track_gap))
 
     def height_of_track(self, num_tracks):
-        return num_tracks * self.track_height + (num_tracks-1) * self.track_gap
+        return round(num_tracks * self.track_height + (num_tracks-1) * self.track_gap)
 
     @staticmethod
     def string_date_to_date(string_date):

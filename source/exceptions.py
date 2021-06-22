@@ -1,0 +1,2 @@
+class PptPlanVisualiserException(Exception):
+    pass

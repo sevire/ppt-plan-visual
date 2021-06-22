@@ -89,7 +89,7 @@ def configure_logger(logger):
     console_handler.setFormatter(log_formatter)
     logger.addHandler(console_handler)
 
-    logger.setLevel(logging.INFO)
+    logger.setLevel(logging.DEBUG)
 
 
 def main():
