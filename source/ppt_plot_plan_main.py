@@ -11,13 +11,13 @@ root_logger = logging.getLogger()
 # No args provided so use hard-coded defaults
 
 parameters_01 = {
-    'excel_plan_file': '/Users/thomasdeveloper/Documents/Projects/ppt-plan-visual-data/UK-View Plan.xlsx',
+    'excel_plan_file': '/Users/thomasdeveloper/Documents/Projects/ppt-plan-visual-data/plan_test_01.xlsx',
     'excel_plan_sheet': 'UK-View Plan',
-    'excel_plot_cfg_file': '/Users/thomasdeveloper/Documents/Projects/ppt-plan-visual-data/PlanningVisualConfig-01.xlsx',
+    'excel_plot_cfg_file': '/Users/thomasdeveloper/Documents/Projects/ppt-plan-visual-data/PlanningVisualConfig-01a.xlsx',
     'excel_plot_cfg_sheet': 'PlotConfig',
-    'excel_format_cfg_file': '/Users/thomasdeveloper/Documents/Projects/ppt-plan-visual-data/PlanningVisualConfig-01.xlsx',
+    'excel_format_cfg_file': '/Users/thomasdeveloper/Documents/Projects/ppt-plan-visual-data/PlanningVisualConfig-01a.xlsx',
     'excel_format_cfg_sheet': 'FormatConfig',
-    'swimlanes_cfg_file': '/Users/thomasdeveloper/Documents/Projects/ppt-plan-visual-data/PlanningVisualConfig-01.xlsx',
+    'swimlanes_cfg_file': '/Users/thomasdeveloper/Documents/Projects/ppt-plan-visual-data/PlanningVisualConfig-01a.xlsx',
     'swimlanes_cfg_sheet': 'Swimlanes',
     'ppt_template_file': '/Users/thomasdeveloper/Documents/Projects/ppt-plan-visual-data/UK-ViewPlanOnePager.pptx',
 }
@@ -94,13 +94,11 @@ def configure_logger(logger):
 
 def main():
     configure_logger(root_logger)
-
     root_logger.debug('Plan to PowerPoint plotting programme starting...')
     root_logger.info(f"Running from IDE, using fixed arguments")
 
     parameters = get_parameters()
     if parameters is not None:
-
         excel_plan_file = parameters['excel_plan_file']
         excel_plan_sheet = parameters['excel_plan_sheet']
         excel_plot_cfg_file = parameters['excel_plot_cfg_file']
@@ -112,13 +110,19 @@ def main():
         ppt_template_file = parameters['ppt_template_file']
 
         root_logger.info(f'Using plan data from {excel_plan_file}')
-        extracted_plan_data = ExcelPlan.read_plan_data(excel_plan_file, excel_plan_sheet)
 
         plot_config_object = ExcelPlotConfig(excel_plot_cfg_file, excel_sheet=excel_plot_cfg_sheet)
         plot_area_config = plot_config_object.parse_plot_config()
 
         excel_format_config_object = ExcelFormatConfig(excel_format_cfg_file, excel_sheet=excel_format_cfg_sheet)
         format_config = excel_format_config_object.parse_format_config()
+
+        extracted_plan_data = ExcelPlan.read_plan_data(
+            excel_plan_file,
+            excel_plan_sheet,
+            format_config,
+            plot_area_config
+        )
 
         swimlane_config_object = ExcelSwimlaneConfig(swimlanes_cfg_file, excel_sheet=swimlanes_cfg_sheet)
         swimlanes = swimlane_config_object.parse_swimlane_config()

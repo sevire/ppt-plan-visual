@@ -1,6 +1,12 @@
 import logging
 import pandas as pd
 
+from source.exceptions import PptPlanVisualiserException
+from source.refactor_temp.activity_layout_attributes import ActivityLayoutAttributes
+from source.refactor_temp.plan_activity import PlanActivity
+from source.refactor_temp.shape_formatting import ShapeFormatting
+from source.refactor_temp.visual_element_shape import VisualElementShape
+
 root_logger = logging.getLogger()
 
 
@@ -13,7 +19,12 @@ class ExcelPlan:
     """
 
     @staticmethod
-    def read_plan_data(excel_plan_file, excel_plan_sheet_name):
+    def read_plan_data(
+            excel_plan_file,
+            excel_plan_sheet_name,
+            format_properties_list,
+            plan_visual_config
+    ):
 
         read_cols =[
             'Task Name',
@@ -54,7 +65,8 @@ class ExcelPlan:
                 visual_swimlane = milestone_data['Visual Swimlane']
                 track_num = milestone_data['Visual Track # Within Swimlane']
                 num_tracks = milestone_data['Visual # Tracks To Cover']
-                format_properties = milestone_data['Format String']
+                format_1_id = milestone_data['Format String']
+                format_2_id = milestone_data['Done Format String']
                 text_layout = milestone_data['Text Layout']
 
                 # Pre-processing and setting defaults for missing values
@@ -83,9 +95,13 @@ class ExcelPlan:
                     root_logger.warning(f'Num tracks not specified for [{description:40.40}], setting to 1')
                     num_tracks = 1
 
-                if pd.isnull(format_properties):
-                    root_logger.warning(f'Format name not specific for [{description:40.40}], setting to "Default"')
-                    format_properties = 'Default'
+                if pd.isnull(format_1_id):
+                    root_logger.warning(f'Format name not specified for [{description:40.40}], setting to "Default"')
+                    format_1_id = 'Default'
+
+                if pd.isnull(format_2_id):
+                    root_logger.warning(f'Format name not specified for [{description:40.40}], setting to "Default"')
+                    format_2_id = None
 
                 if pd.isnull(text_layout):
                     # Text layout isn't specified, so:
@@ -100,23 +116,42 @@ class ExcelPlan:
                         text_layout = 'Shape'
                     else:
                         root_logger.warning(f'Text layout not specific for [{description:40.40}], setting to "Left"')
-                        raise Exception(f'Unknown value for activity_type ({activity_type})')
+                        raise PptPlanVisualiserException(f'Unknown value for activity_type ({activity_type})')
 
+                activity_layout_attributes = ActivityLayoutAttributes(
+                    visual_swimlane,
+                    track_num,
+                    num_tracks,
+                    text_layout,
+                )
 
-                record = {
-                    'id': index,
-                    'description': text,
-                    'type': activity_type,
-                    'start_date': start_date,
-                    'end_date': end_date,
-                    'swimlane': visual_swimlane,
-                    'track_num': track_num,
-                    'bar_height_in_tracks': num_tracks,
-                    'format_properties': format_properties,
-                    'done_format_properties': milestone_data['Done Format String'],
-                    'text_layout': text_layout
-                }
-                plan_data.append(record)
+                shape_formatting_1 = ShapeFormatting.from_dict(format_properties_list[format_1_id], plan_visual_config)
+                if format_2_id is None:
+                    shape_formatting_2 = None
+                else:
+                    shape_formatting_2 = ShapeFormatting.from_dict(format_properties_list[format_2_id], plan_visual_config)
+
+                if activity_type == "bar":
+                    display_shape = plan_visual_config.activity_shape
+                elif activity_type == "milestone":
+                    display_shape = plan_visual_config.milestone_shape
+                else:
+                    raise PptPlanVisualiserException(f"Unexpected activity type '{activity_type}'")
+
+                activity = PlanActivity(
+                    activity_id=index,
+                    description=text,
+                    activity_type=activity_type,
+                    start_date=start_date,
+                    end_date=end_date,
+                    activity_layout_attributes=activity_layout_attributes,
+                    display_shape=display_shape,
+                    plan_visual_config=plan_visual_config,
+                    shape_formatting_1=shape_formatting_1,
+                    shape_formatting_2=shape_formatting_2
+                )
+
+                plan_data.append(activity)
 
         return plan_data
 

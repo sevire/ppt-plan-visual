@@ -3,6 +3,7 @@ from datetime import datetime
 import pandas as pd
 from dateutil.utils import today
 
+from source.refactor_temp.visual_element_shape import VisualElementShape
 from source.utilities import day_increment
 
 
@@ -19,6 +20,12 @@ class PlotDriver:
         self.right = plot_config['right']
         self.track_height = plot_config['track_height']
         self.track_gap = plot_config['track_gap']
+        self.min_activity_text_width = plot_config['activity_text_width']
+        self.milestone_text_width = plot_config['milestone_text_width']
+        self.text_margin = plot_config['text_margin']
+        self.milestone_width = plot_config['milestone_width']
+        self.activity_shape = VisualElementShape[plot_config['activity_shape'].upper()]
+        self.milestone_shape = VisualElementShape[plot_config['milestone_shape'].upper()]
 
         if 'today' in plot_config:
             self.today = plot_config['today']
@@ -53,7 +60,7 @@ class PlotDriver:
         :param date:
         :return:
         """
-        num_days_from_min_date = date.toordinal() - self.min_start_date.toordinal()
+        num_days_from_min_date = date.toordinal() - self.min_start_date.toordinal() + 1
         proportion_of_plot_width = num_days_from_min_date / self.num_days_in_date_range
         distance_from_left_of_plot_area = proportion_of_plot_width * self.plot_area_width
         x_coord = round(self.left + distance_from_left_of_plot_area)

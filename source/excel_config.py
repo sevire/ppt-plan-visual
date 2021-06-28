@@ -2,6 +2,8 @@ import pandas as pd
 import numpy as np
 from pptx.util import Cm, Pt
 
+from source.plot_driver import PlotDriver
+
 
 class ExcelFormatConfig:
     """
@@ -79,8 +81,10 @@ class ExcelPlotConfig:
             'milestone_text_width': Cm(record['Milestone Text Width']),
             'activity_text_width': Cm(record['Activity Text Width']),
             'text_margin': Cm(record['Text Margin']),
+            'activity_shape': record['Activity Shape'],
+            'milestone_shape': record['Milestone Shape']
         }
-        return plot_area_config
+        return PlotDriver(plot_area_config)
 
 
 class ExcelSwimlaneConfig:

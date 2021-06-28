@@ -3,6 +3,7 @@ import os
 from calendar import month_name
 from datetime import date
 from functools import reduce
+from typing import List
 
 import pandas as pd
 from pptx import Presentation
@@ -11,14 +12,12 @@ from pptx.enum.shapes import MSO_AUTO_SHAPE_TYPE, MSO_CONNECTOR_TYPE
 from pptx.enum.text import PP_PARAGRAPH_ALIGNMENT as PP_ALIGN
 from pptx.enum.text import MSO_VERTICAL_ANCHOR as MSO_ANCHOR
 
-from source.common_display_attributes import VisualElementDisplayAttributes
 from source.excel_plan import ExcelPlan
-from source.layout_attributes import LayoutAttributes
-from source.plan_activity import PlanActivity
+from source.exceptions import PptPlanVisualiserException
+from source.refactor_temp.plan_activity import PlanActivity
 from source.plot_driver import PlotDriver
 from source.utilities import get_path_name_ext, SwimlaneManager, first_day_of_month, iterate_months, \
-    num_months_between_dates, last_day_of_month, is_current, is_nan, is_future, is_past
-from source.visual_element_shape import VisualElementShape
+    num_months_between_dates, last_day_of_month, is_current, is_future, is_past
 
 root_logger = logging.getLogger()
 
@@ -33,7 +32,13 @@ class PlanVisualiser:
     :param plan_data:
     """
 
-    def __init__(self, plan_data, plot_config, format_config, template_path, swimlanes):
+    def __init__(
+            self,
+            plan_data: List[PlanActivity],
+            plot_config: PlotDriver,
+            format_config: dict,
+            template_path: str,
+            swimlanes: List[dict]):
         # The actual plan data with activities and milestones, start/finish dates etc.
         self.plan_data = plan_data
 
@@ -55,7 +60,7 @@ class PlanVisualiser:
         visual_slide = self.prs.slides[0]  # Assume there is one slide and that's where we will place the visual
 
         self.shapes = visual_slide.shapes
-        self.plot_driver = PlotDriver(plot_config)
+        self.plot_driver = plot_config
 
         self.align_months()
 
@@ -82,67 +87,15 @@ class PlanVisualiser:
 
         root_logger.info(f'Plotting {len(self.plan_data)} elements')
 
-        for plotable_element in self.plan_data:
-            start = plotable_element['start_date']
-            end = plotable_element['end_date']
-            description = plotable_element['description']
+        for activity in self.plan_data:
+            start = activity.start_date
+            end = activity.end_date
+            description = activity.description
 
             root_logger.debug(f'Plotting activity: [{description:40.40}], start: {start}, end: {end}')
 
-            swimlane = plotable_element['swimlane']
-            track_num = plotable_element['track_num']
-            num_tracks = plotable_element['bar_height_in_tracks']
-
-            shape_format_name = plotable_element['format_properties']
-            done_shape_format_name = plotable_element['done_format_properties']
-            format_data = self.format_config[shape_format_name]
-            done_format_data = None if is_nan(done_shape_format_name) else self.format_config[done_shape_format_name]
-
-            text_layout = plotable_element['text_layout']
-            if plotable_element['type'] == 'bar':
-                layout_attributes = LayoutAttributes(swimlane, track_num, num_tracks)
-                display_attributes = VisualElementDisplayAttributes.from_dict(format_data)
-                if done_format_data is None:
-                    done_display_attributes = None
-                else:
-                    done_display_attributes = VisualElementDisplayAttributes.from_dict(done_format_data)
-                activity = PlanActivity(
-                    start,
-                    end,
-                    layout_attributes,
-                    display_attributes,
-                    VisualElementShape.ROUNDED_RECTANGLE,
-                    self.plot_driver,
-                    self.swimlane_data,
-                    done_display_attributes
-                )
-                plot = False
-                top = None
-                height = None
-
-                coords = activity.get_ppt_plot_coords()
-                if coords is not None:
-                    plot = True
-                    top = coords[1]  # Refactor to set top properly
-                    height = coords[3]  # Refactor to set height properly
-                    self.plot_shape(MSO_AUTO_SHAPE_TYPE.ROUNDED_RECTANGLE, *coords, format_data)
-
-                if activity.include_done is True:
-                    done_coords = activity.get_ppt_plot_coords(done_flag=True)
-                    if coords is not None:
-                        plot = True
-                        top = coords[1]  # Refactor to set top properly
-                        height = coords[3]  # Refactor to set height properly
-                        self.plot_shape(MSO_AUTO_SHAPE_TYPE.ROUNDED_RECTANGLE, *done_coords, format_data)
-
-                if plot is True:
-                    # Text is same plot whether we are plotting as two activities or one
-                    left, right, width = self.plot_driver.shape_parameters(activity.start_date, activity.end_date)
-                    self.plot_text_for_shape(left, top, width, height, description, format_data, text_layout)
-        # self.plot_activity(description, start, end, swimlane, track_num, num_tracks, format_data, text_layout, done_format_data)
-
-            elif plotable_element['type'] == 'milestone':
-                self.plot_milestone(description, start, swimlane, track_num, format_data, text_layout)
+            activity.swimlane_start_track = self.swimlane_data[activity.activity_layout_attributes.swimlane_name]['start_track']
+            activity.plot_ppt_shapes(self.shapes)
 
         self.plot_vertical_line(date.today())
         self.prs.save(self.slides_out_path)
@@ -214,7 +167,7 @@ class PlanVisualiser:
 
         else:
             # Shouldn't get to here so raise an exception
-            raise Exception("Shouldn't get here")
+            raise PptPlanVisualiserException("Shouldn't get here")
 
         # Text is same plot whether we are plotting as two activities or one
         left, right, width = self.plot_driver.shape_parameters(start_date, end_date)
@@ -222,8 +175,8 @@ class PlanVisualiser:
 
     def plot_milestone(self, milestone_description, start_date, swimlane, track_number, properties, text_layout):
         swimlane_start = self.swimlane_data[swimlane]['start_track']
-        milestone_width = self.plot_config['milestone_width']
-        milestone_height = self.plot_config['track_height']
+        milestone_width = self.plot_config.milestone_width
+        milestone_height = self.plot_config.track_height
 
         left = self.plot_driver.milestone_left(start_date, milestone_width)
         top = self.plot_driver.track_number_to_y_coordinate(swimlane_start + track_number - 1)
@@ -236,15 +189,15 @@ class PlanVisualiser:
         self.shape_line(shape, properties)
 
         if text_layout == "Right":
-            milestone_text_width = self.plot_config['milestone_text_width']
+            milestone_text_width = self.plot_config.milestone_text_width
             milestone_text_left = left + milestone_width
             properties['text_align'] = 'left'
             self.plot_text(milestone_description, milestone_text_left, top, milestone_text_width, milestone_height,
                            properties, text_layout)
         else:  # Default is left
-            milestone_text_width = self.plot_config['milestone_text_width']
+            milestone_text_width = self.plot_config.milestone_text_width
             milestone_text_left = left - milestone_text_width
-            properties['text_align'] = 'right'
+            properties.text_align = 'right'
             self.plot_text(milestone_description, milestone_text_left, top, milestone_text_width, milestone_height,
                            properties, text_layout)
 
@@ -270,13 +223,13 @@ class PlanVisualiser:
         self.shape_line(shape, shape_properties)
 
     def plot_text_for_shape(self, left, top, width, height, text, shape_properties, text_layout):
-        activity_text_width = self.plot_config['activity_text_width']
+        activity_text_width = self.plot_config.min_activity_text_width
         if text_layout == 'Left':
             # Extend the text to the left so that if overflows to the left of the shape.
             adjust_width = max(width, activity_text_width)
             text_left = left + width - adjust_width
             text_width = activity_text_width
-            shape_properties['text_align'] = 'right'
+            shape_properties.text_align = 'right'
             self.plot_text(text, text_left, top, text_width, height, shape_properties, text_layout)
         elif text_layout == 'Right':
             # Extend text to the right so that it overflows to the right of the shape
@@ -298,7 +251,7 @@ class PlanVisualiser:
         shape.fill.background()
         shape.line.fill.background()
 
-        self.add_text_to_shape(shape, text, format_data, text_layout)
+        # self.add_text_to_shape(shape, text, format_data, text_layout)
 
     def add_text_to_shape(self, shape, text, format_data, text_layout):
         text_frame = shape.text_frame
@@ -311,14 +264,14 @@ class PlanVisualiser:
         # Adjust text margin depending upon positioning. To help readability by having small gap
         if text_layout == "swimlane":
             # Hard-coded case for swimlanes as isn't driven by configuration
-            text_frame.margin_top = self.plot_config['text_margin']
-            text_frame.margin_left = self.plot_config['text_margin']
+            text_frame.margin_top = self.plot_config.text_margin
+            text_frame.margin_left = self.plot_config.text_margin
         if text_layout == "Left":
-            text_frame.margin_right = self.plot_config['text_margin']
+            text_frame.margin_right = self.plot_config.text_margin
         elif text_layout == "Right":
-            text_frame.margin_left = self.plot_config['text_margin']
+            text_frame.margin_left = self.plot_config.text_margin
 
-        vertical = format_data['text_vertical_align']
+        vertical = format_data.text_vertical_align
         if vertical == "top":
             text_frame.vertical_anchor = MSO_ANCHOR.TOP
         elif vertical == "bottom":
@@ -344,6 +297,7 @@ class PlanVisualiser:
 
         :param paragraph:
         :param run:
+        :param format_data:
         :return:
         """
         font = run.font
@@ -399,10 +353,11 @@ class PlanVisualiser:
 
             # Need to adjust to start between track end and track start, unless this is the first row
             if row_number > 1:
-                top -= (self.plot_config['track_gap'] / 2)
-            bottom = self.plot_driver.track_number_to_y_coordinate(end_track) + self.plot_config['track_height'] + (self.plot_config['track_gap'] / 2)
-            left = self.plot_config['left']
-            width = self.plot_config['right'] - self.plot_config['left']
+                top -= (self.plot_config.track_gap / 2)
+            bottom = self.plot_driver.track_number_to_y_coordinate(end_track) + self.plot_config.track_height + (
+                        self.plot_config.track_gap / 2)
+            left = self.plot_config.left
+            width = self.plot_config.right - self.plot_config.left
             height = bottom - top
 
             shape = self.shapes.add_shape(
@@ -420,7 +375,7 @@ class PlanVisualiser:
 
             self.shape_fill(shape, format_info)
             self.shape_line(shape, format_info)
-            self.add_text_to_shape(shape, swimlane, format_info, "swimlane")
+            # self.add_text_to_shape(shape, swimlane, format_info, "swimlane")
 
     def plot_month_bar(self):
         """
@@ -433,16 +388,14 @@ class PlanVisualiser:
         first_of_start_month = first_day_of_month(self.plot_driver.min_start_date)
         first_of_end_month = first_day_of_month(self.plot_driver.max_end_date)
 
-        for month_index, month_start_date in enumerate(iterate_months(first_of_start_month, num_months_between_dates(first_of_start_month, first_of_end_month))):
-            # left = self.plot_driver.date_to_x_coordinate(month_start_date)
-            # right = self.plot_driver.date_to_x_coordinate(day_increment(last_day_of_month(month_start_date), 1))
-            # width = right - left
-
+        for month_index, month_start_date in enumerate(iterate_months(first_of_start_month,
+                                                                      num_months_between_dates(first_of_start_month,
+                                                                                               first_of_end_month))):
             left, right, width = self.plot_driver.shape_parameters(month_start_date,
                                                                    last_day_of_month(month_start_date), gap_flag=False)
 
-            height = (self.plot_config['track_height'] * 1)
-            top = self.plot_config['top'] - height
+            height = (self.plot_config.track_height * 1)
+            top = self.plot_config.top - height
 
             if month_index % 2 == 1:
                 shape_format = self.format_config['month_shape_format_odd']
@@ -455,8 +408,19 @@ class PlanVisualiser:
             self.plot_text_for_shape(left, top, width, height, month, shape_format, 'shape')
 
     @classmethod
-    def from_excel_plan(cls, plan_data_excel_path, plan_data_sheet_name):
-        extracted_plan_data = ExcelPlan.read_plan_data(plan_data_excel_path, plan_data_sheet_name)
+    def from_excel_plan(
+            cls,
+            plan_data_excel_path,
+            plan_data_sheet_name,
+            format_properties_list,
+            plan_visual_config
+    ):
+        extracted_plan_data = ExcelPlan.read_plan_data(
+            plan_data_excel_path,
+            plan_data_sheet_name,
+            format_properties_list,
+            plan_visual_config
+        )
 
         return extracted_plan_data
 
@@ -483,8 +447,11 @@ class PlanVisualiser:
         swimlane_data = {}
         swimlane_manager = SwimlaneManager(self.swimlanes)
         for record in self.plan_data:
-            swimlane = record['swimlane']
-            track_num_high = record['track_num'] + record['bar_height_in_tracks'] - 1
+            swimlane = record.activity_layout_attributes.swimlane_name
+            track_num_high = \
+                record.activity_layout_attributes.track_number + \
+                record.activity_layout_attributes.number_of_tracks_to_span \
+                - 1
             if swimlane not in swimlane_data:
                 # Adding record for this swimlane. Also remember ordering as is important later.
                 swimlane_record = {
@@ -526,22 +493,24 @@ class PlanVisualiser:
         """
 
         if pd.isnull(self.plot_driver.min_start_date):
-
-            start_dates = [record['start_date'] for record in self.plan_data]
-            self.plot_driver.min_start_date = reduce(lambda min_date, start_date: start_date if start_date < min_date else min_date, start_dates)
+            start_dates = [record.start_date for record in self.plan_data]
+            self.plot_driver.min_start_date = reduce(
+                lambda min_date, start_date: start_date if start_date < min_date else min_date, start_dates)
 
         if pd.isnull(self.plot_driver.max_end_date):
-            end_dates = [record['end_date'] for record in self.plan_data]
-            self.plot_driver.max_end_date = reduce(lambda max_date, end_date: end_date if not pd.isnull(end_date) and end_date > max_date else max_date, end_dates)
+            end_dates = [record.end_date for record in self.plan_data]
+            self.plot_driver.max_end_date = reduce(
+                lambda max_date, end_date: end_date if not pd.isnull(end_date) and end_date > max_date else max_date,
+                end_dates)
 
         # Regardless of whether start and end dates have been configured, we need to align with whole month
         self.plot_driver.min_start_date = first_day_of_month(self.plot_driver.min_start_date)
         self.plot_driver.max_end_date = last_day_of_month(self.plot_driver.max_end_date)
 
-    def plot_vertical_line(self, date):
-        x = self.plot_driver.date_to_x_coordinate(date)
-        top = self.plot_config['top']
-        bottom = self.plot_config['bottom']
+    def plot_vertical_line(self, current_date):
+        x = self.plot_driver.date_to_x_coordinate(current_date)
+        top = self.plot_config.top
+        bottom = self.plot_config.bottom
         line = self.shapes.add_connector(MSO_CONNECTOR_TYPE.STRAIGHT, x, top, x, bottom)
         today_line_format = self.format_config['today_line']
         today_line_colour = today_line_format['line_rgb']
