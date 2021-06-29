@@ -261,16 +261,16 @@ class PlanActivity:
         :return: left value to be used in ppt plot.
         """
         if case == "activity":
-            return round(self.plan_visual_config.date_to_x_coordinate(self.start_date))
+            return round(self.plan_visual_config.date_to_x_coordinate(self.start_date, "start"))
         elif case == "today":
-            return round(self.plan_visual_config.date_to_x_coordinate(self.today))
+            return round(self.plan_visual_config.date_to_x_coordinate(self.today, "start"))
         elif case == "milestone":
             milestone_width = self.plan_visual_config.milestone_width
             milestone_left_adjust = milestone_width / 2
 
             # The milestone symbol needs to be plotted so that it's centre coincides exactly with the
             # date it represents.  So offset the left point by half the width of the symbol.
-            start_date_left = self.plan_visual_config.date_to_x_coordinate(self.start_date)
+            start_date_left = self.plan_visual_config.date_to_x_coordinate(self.start_date, "middle")
             return round(start_date_left - milestone_left_adjust)
         else:
             raise PptPlanVisualiserException(f"Unexpected case supplied '{case}'while calculating left plot")
@@ -287,17 +287,17 @@ class PlanActivity:
         """
 
         if case == "activity":
-            end = self.plan_visual_config.date_to_x_coordinate(self.end_date)
+            end = self.plan_visual_config.date_to_x_coordinate(self.end_date, "end")
             start = self.plan_visual_config.date_to_x_coordinate(self.start_date)
-            return round(end - start + self.plan_visual_config.width_of_one_day())
+            return round(end - start)
         elif case == "part_1":
-            end = self.plan_visual_config.date_to_x_coordinate(self.today)
+            end = self.plan_visual_config.date_to_x_coordinate(self.today, "end")
             start = self.plan_visual_config.date_to_x_coordinate(self.start_date)
-            return round(end - start + self.plan_visual_config.width_of_one_day())
+            return round(end - start)
         elif case == "part_2":
-            end = self.plan_visual_config.date_to_x_coordinate(self.end_date)
+            end = self.plan_visual_config.date_to_x_coordinate(self.end_date, "end")
             start = self.plan_visual_config.date_to_x_coordinate(self.today)
-            return round(end - start + self.plan_visual_config.width_of_one_day())
+            return round(end - start)
         elif case == "milestone":
             return round(self.plan_visual_config.milestone_width)
 

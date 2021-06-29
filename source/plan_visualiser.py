@@ -508,7 +508,7 @@ class PlanVisualiser:
         self.plot_driver.max_end_date = last_day_of_month(self.plot_driver.max_end_date)
 
     def plot_vertical_line(self, current_date):
-        x = self.plot_driver.date_to_x_coordinate(current_date)
+        x = self.plot_driver.date_to_x_coordinate(current_date, "middle")
         top = self.plot_config.top
         bottom = self.plot_config.bottom
         line = self.shapes.add_connector(MSO_CONNECTOR_TYPE.STRAIGHT, x, top, x, bottom)

@@ -46,23 +46,50 @@ class PlotDriver:
 
         self.plot_area_width = self.right - self.left
 
-    def date_to_x_coordinate(self, date):
+    def date_to_x_coordinate(self, date, alignment_case="start"):
         """
-        This isn't quite as easy as it seems if we do it to pinpoint accuracy as the fact that
-        different months have different numbers of days will come into play.
+        Calculates the x coordinate within a PowerPoint slide of a specific date.
 
-        For now just calculate based on how many days through the range the date is and
-        calculate distance as a proportion of total plot width.
+        Note we may want a slightly different outcome depending upon the scenario, driven by the fact that a
+        day takes up a finite amount of space and sometimes we want the left edge and sometimes we want the
+        right edge, and sometimes we want the middle.
 
-        In fact this approach would be completely accurate if we were using days as the unit
-        not months.
+        Specifically:
+
+        - If we are plotting the left hand edge of an activity bar then the point should be at the start of the day
+        - If we are plotting the right hand edge of an activity bar then the point should be at the end of the day
+        - If we are plotting a date line then the line should (probably) be in the middle of the day.
+
+        The calculation works as follows:
+
+        Case = "start"
+        - Work out how many whole days there are before the day to be plotted.
+        - The result is 1 more than this (in the units of PPT).
+
+        Case = "end"
+        - Work out one more than the number of whole days before the day to be plotted.
+        - The result is 1 less than this (in the units of PPT)
+
+        Case = "middle"
+        - The result is 0.5 days more than the number of whole days before the day to be plotted.
 
         :param date:
+        :param alignment_case: Values are "start" (default), "end", "middle"
         :return:
         """
-        num_days_from_min_date = date.toordinal() - self.min_start_date.toordinal() + 1
-        proportion_of_plot_width = num_days_from_min_date / self.num_days_in_date_range
-        distance_from_left_of_plot_area = proportion_of_plot_width * self.plot_area_width
+        if alignment_case == "start":
+            num_days = date.toordinal() - self.min_start_date.toordinal()
+            additional_units = 1  # 1 unit, not one Cm (1/360000 of Cm)
+        elif alignment_case == " end":
+            num_days = date.toordinal() - self.min_start_date.toordinal()
+            additional_units = -1
+        else:  # assume case is "middle"
+            num_days = date.toordinal() - self.min_start_date.toordinal()
+            additional_units = self.width_of_one_day()/2
+
+        main = (num_days / self.num_days_in_date_range) * self.plot_area_width
+        distance_from_left_of_plot_area = main + additional_units
+
         x_coord = round(self.left + distance_from_left_of_plot_area)
 
         return x_coord
@@ -100,13 +127,13 @@ class PlotDriver:
         else:
             gap_increment = 0
 
-        left = self.date_to_x_coordinate(start_date)
-        right = self.date_to_x_coordinate(day_increment(end_date, 1)) - gap_increment
+        left = self.date_to_x_coordinate(start_date, "start")
+        right = self.date_to_x_coordinate(end_date, "end") - gap_increment
         width = right - left
 
         return left, right, width
 
     def milestone_left(self, start_date, milestone_width):
-        left = int(self.date_to_x_coordinate(start_date) + (self.width_of_one_day() / 2) - (milestone_width / 2))
+        left = int(self.date_to_x_coordinate(start_date, "middle") - (milestone_width / 2))
 
         return left
