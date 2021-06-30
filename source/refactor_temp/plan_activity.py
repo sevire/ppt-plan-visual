@@ -125,7 +125,8 @@ class PlanActivity:
             text=text,
             text_formatting=self.text_formatting,
         )
-        plot_element.plot_ppt(ppt_shapes_object)
+        shape = plot_element.plot_ppt(ppt_shapes_object)
+        return shape
 
     def plot_ppt_shapes(self, ppt_shapes_object):
         """
@@ -134,11 +135,12 @@ class PlanActivity:
         :param ppt_shapes_object:
         :return:
         """
+        shapes = []  # Collect all shapes plotted and return them
         if not self.multi_format_enabled:
             # Simple case.  Just plot one activity shape and one text shape with formatting_1
             if self.activity_type == "milestone":
                 left, top, width, height = self.get_milestone_coords()
-                self.ppt_plot_shape(
+                shape = self.ppt_plot_shape(
                     ppt_shapes_object,
                     self.display_shape,
                     top,
@@ -147,12 +149,13 @@ class PlanActivity:
                     height,
                     self.shape_formatting_1
                 )
+                shapes.append(shape)
             elif self.activity_type == "bar":
                 left = self._shape_left("activity")
                 top = self._plot_top
                 width = self._shape_width("activity")
                 height = self._plot_height
-                self.ppt_plot_shape(
+                shape = self.ppt_plot_shape(
                     ppt_shapes_object,
                     self.display_shape,
                     left,
@@ -161,6 +164,7 @@ class PlanActivity:
                     height,
                     self.shape_formatting_1
                 )
+                shapes.append(shape)
             else:
                 raise PptPlanVisualiserException(f"Unexpected activity type '{self.activity_type}'")
         else:
@@ -176,7 +180,7 @@ class PlanActivity:
                 top = self._plot_top
                 width = self._shape_width("milestone")
                 height = self._plot_height
-                self.ppt_plot_shape(
+                shape = self.ppt_plot_shape(
                     ppt_shapes_object,
                     self.display_shape,
                     top,
@@ -185,6 +189,7 @@ class PlanActivity:
                     height,
                     formatting
                 )
+                shapes.append(shape)
             else:
                 # Multiple formats for an activity (not a milestone).  There are three cases.
                 if self.is_past() or self.is_future():
@@ -194,7 +199,7 @@ class PlanActivity:
                     top = self._plot_top
                     width = self._shape_width("activity")
                     height = self._plot_height
-                    self.ppt_plot_shape(
+                    shape = self.ppt_plot_shape(
                         ppt_shapes_object,
                         self.display_shape,
                         top,
@@ -203,6 +208,7 @@ class PlanActivity:
                         height,
                         formatting
                     )
+                    shapes.append(shape)
                 else:
                     # Most complex case.  We are plotting the activity as two shapes, the past and the future.
                     # The past has the alternative formatting, the future has the default formatting.
@@ -218,7 +224,7 @@ class PlanActivity:
                     left_2 = self._shape_left("today")
                     width_2 = self._shape_width("part_2")
 
-                    self.ppt_plot_shape(
+                    shape = self.ppt_plot_shape(
                         ppt_shapes_object,
                         self.display_shape,
                         top,
@@ -227,8 +233,9 @@ class PlanActivity:
                         height,
                         self.shape_formatting_2
                     )
+                    shapes.append(shape)
 
-                    self.ppt_plot_shape(
+                    shape = self.ppt_plot_shape(
                         ppt_shapes_object,
                         self.display_shape,
                         top,
@@ -237,7 +244,9 @@ class PlanActivity:
                         height,
                         self.shape_formatting_1
                     )
+                    shapes.append(shape)
         self.plot_ppt_text_shape(ppt_shapes_object)
+        return shapes
 
     def is_current(self):
         if self.start_date <= self.today <= self.end_date:
@@ -291,7 +300,7 @@ class PlanActivity:
             start = self.plan_visual_config.date_to_x_coordinate(self.start_date)
             return round(end - start)
         elif case == "part_1":
-            end = self.plan_visual_config.date_to_x_coordinate(self.today, "end")
+            end = self.plan_visual_config.date_to_x_coordinate(self.today, "start")
             start = self.plan_visual_config.date_to_x_coordinate(self.start_date)
             return round(end - start)
         elif case == "part_2":
@@ -374,7 +383,8 @@ class PlanActivity:
             text=self.description,
             text_formatting=text_formatting
         )
-        plot_element.plot_ppt(ppt_shapes_object)
+        shape = plot_element.plot_ppt(ppt_shapes_object)
+        return shape
 
     def get_milestone_coords(self):
         left = self._shape_left("milestone")

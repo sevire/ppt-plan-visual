@@ -80,8 +80,8 @@ class PlotDriver:
         if alignment_case == "start":
             num_days = date.toordinal() - self.min_start_date.toordinal()
             additional_units = 1  # 1 unit, not one Cm (1/360000 of Cm)
-        elif alignment_case == " end":
-            num_days = date.toordinal() - self.min_start_date.toordinal()
+        elif alignment_case == "end":
+            num_days = date.toordinal() - self.min_start_date.toordinal() + 1
             additional_units = -1
         else:  # assume case is "middle"
             num_days = date.toordinal() - self.min_start_date.toordinal()

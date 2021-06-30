@@ -1,8 +1,7 @@
 from unittest import TestCase
-
 from colour import Color
+from pptx import Presentation
 from pptx.util import Cm
-
 from source.plot_driver import PlotDriver
 from source.refactor_temp.activity_layout_attributes import ActivityLayoutAttributes
 from source.refactor_temp.plan_activity import PlanActivity
@@ -10,25 +9,27 @@ from source.refactor_temp.shape_formatting import ShapeFormatting
 from source.refactor_temp.text_formatting import TextFormatting
 from source.refactor_temp.visual_element_shape import VisualElementShape
 from source.tests.testing_utilities import parse_date
+from unittest.mock import Mock
 
 test_case_01 = {
-    'visual_start_date': parse_date('2021-01-01'),
-    'visual_end_date': parse_date('2021-07-31'),
-    'visual_left': Cm(0),
-    'visual_right': Cm(33.87),
-    'activity_start_date': parse_date('2021-01-15'),
-    'activity_end_date': parse_date('2021-07-27'),
-    'expected_left': 999,
-    'expected_width': 999,
-    'today': parse_date('2021-06-29'),
-    'num_days_in_date_range': 212
+    'parameters': {
+        'visual_start_date': parse_date('2021-01-01'),
+        'visual_end_date': parse_date('2021-07-31'),
+        'visual_left': Cm(0),
+        'visual_right': Cm(33.87),
+        'activity_start_date': parse_date('2021-01-15'),
+        'activity_end_date': parse_date('2021-07-27'),
+        'today': parse_date('2021-06-29'),
+        'num_days_in_date_range': 212
+    },
+    'expected_results': {  # Calculations are from Excel
+        'expected_num_shapes': 2,
+        'expected_left_1': 805212,
+        'expected_width_1': 9489991,
+        'expected_left_2': 10295203,
+        'expected_width_2': 1667938,
+    }
 }
-
-
-class DummyShapes:
-    def add_shape(self, shape, top, left, width, height):
-        self.left = left,
-        self.width = width
 
 
 class TestHorizontalLayout(TestCase):
@@ -40,12 +41,14 @@ class TestHorizontalLayout(TestCase):
             "shape"
         )
         display_shape = VisualElementShape.RECTANGLE
+        parameters = test_case_01['parameters']
+        expected_results = test_case_01['expected_results']
         plan_visual_config = PlotDriver(
             {
                 'top': Cm(3.86),
-                'left': test_case_01['visual_left'],
+                'left': parameters['visual_left'],
                 'bottom': Cm(20),
-                'right': Cm(30),
+                'right': Cm(33.87),
                 'track_height': Cm(0.6),
                 'track_gap': Cm(0.2),
                 'activity_text_width': Cm(5),
@@ -58,7 +61,7 @@ class TestHorizontalLayout(TestCase):
                 'max_end_date': parse_date('2021-07-31')
             }
         )
-        plan_visual_config.num_days_in_date_range = test_case_01['num_days_in_date_range']
+        plan_visual_config.num_days_in_date_range = parameters['num_days_in_date_range']
         text_formatting = TextFormatting()
         formatting_1 = ShapeFormatting(
             Color(rgb=(1,1,1)),
@@ -71,18 +74,29 @@ class TestHorizontalLayout(TestCase):
             12345,
             'Dummy',
             'bar',
-            test_case_01['activity_start_date'],
-            test_case_01['activity_end_date'],
+            parameters['activity_start_date'],
+            parameters['activity_end_date'],
             layout_attributes,
             display_shape,
             plan_visual_config,
             formatting_1,
             formatting_1,
-            test_case_01['today'],
+            parameters['today'],
             1
         )
 
-        dummy_shapes = DummyShapes()
-        activity.plot_ppt_shapes(dummy_shapes)
+        pres = Presentation()
+        slide_layout = pres.slide_layouts[0]
+        slide = pres.slides.add_slide(slide_layout)
+        shapes = slide.shapes
 
-        self.assertEqual(test_case_01['expected_left'], dummy_shapes.left)
+        shapes = activity.plot_ppt_shapes(shapes)
+        actual_left_1 = shapes[0].left
+        actual_width_1 = shapes[0].width
+        actual_left_2 = shapes[1].left
+        actual_width_2 = shapes[1].width
+        self.assertEqual(expected_results['expected_num_shapes'], len(shapes))
+        self.assertEqual(expected_results['expected_left_1'], actual_left_1)
+        self.assertEqual(expected_results['expected_width_1'], actual_width_1)
+        self.assertEqual(expected_results['expected_left_2'], actual_left_2)
+        self.assertEqual(expected_results['expected_width_2'], actual_width_2)

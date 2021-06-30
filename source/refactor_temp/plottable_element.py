@@ -134,6 +134,7 @@ class PlotableElement:
             font.bold = self.text_formatting.font_bold
             font.italic = self.text_formatting.font_italic
             font.color.rgb = RGBColor(*self.rgb_ppt_format(self.text_formatting.font_colour.get_rgb()))
+        return plotted_shape
 
     @staticmethod
     def _text_vertical_alignment(alignment):
