@@ -14,6 +14,13 @@ tpc = {  # Test Plot Config
     'track_gap': Cm(0.5),
     'min_start_date': parse_date('2021-01-01'),
     'max_end_date': parse_date('2021-01-31'),
+    'activity_text_width': Cm(5),
+    'milestone_text_width': Cm(5),
+    'text_margin': Cm(0.1),
+    'activity_width': Cm(5),
+    'milestone_width': Cm(5),
+    'activity_shape': 'RECTANGLE',
+    'milestone_shape': 'DIAMOND'
 }
 
 

@@ -1,5 +1,6 @@
 from unittest import TestCase
 from colour import Color
+from ddt import ddt, unpack, data
 from pptx import Presentation
 from pptx.util import Cm
 from source.plot_driver import PlotDriver
@@ -11,29 +12,43 @@ from source.refactor_temp.visual_element_shape import VisualElementShape
 from source.tests.testing_utilities import parse_date
 from unittest.mock import Mock
 
+visual_parameters_01 = {
+    'visual_start_date': parse_date('2021-01-01'),
+    'visual_end_date': parse_date('2021-07-31'),
+    'visual_left': Cm(0),
+    'visual_right': Cm(33.87),
+}
+
 test_case_01 = {
     'parameters': {
-        'visual_start_date': parse_date('2021-01-01'),
-        'visual_end_date': parse_date('2021-07-31'),
-        'visual_left': Cm(0),
-        'visual_right': Cm(33.87),
         'activity_start_date': parse_date('2021-01-15'),
         'activity_end_date': parse_date('2021-07-27'),
         'today': parse_date('2021-06-29'),
         'num_days_in_date_range': 212
     },
     'expected_results': {  # Calculations are from Excel
-        'expected_num_shapes': 2,
-        'expected_left_1': 805212,
-        'expected_width_1': 9489991,
-        'expected_left_2': 10295203,
-        'expected_width_2': 1667938,
+        'num_shapes': 2,
+        'left_1': 805211,
+        'width_1': 9489991,
+        'left_2': 10295202,
+        'width_2': 1667938,
     }
 }
 
 
+def test_case_gen():
+    for expected_result in test_case_01['expected_results']:
+        yield visual_parameters_01, \
+              test_case_01['parameters'], \
+              expected_result, \
+              test_case_01['expected_results'][expected_result]
+
+
+@ddt
 class TestHorizontalLayout(TestCase):
-    def test_horizontal_layout(self):
+    @data(*test_case_gen())
+    @unpack
+    def test_horizontal_layout(self, visual_parameters, activity_parameters, expected_case, expected_value):
         layout_attributes = ActivityLayoutAttributes(
             'Swimlane-01',
             1,
@@ -46,7 +61,7 @@ class TestHorizontalLayout(TestCase):
         plan_visual_config = PlotDriver(
             {
                 'top': Cm(3.86),
-                'left': parameters['visual_left'],
+                'left': visual_parameters['visual_left'],
                 'bottom': Cm(20),
                 'right': Cm(33.87),
                 'track_height': Cm(0.6),
@@ -95,8 +110,14 @@ class TestHorizontalLayout(TestCase):
         actual_width_1 = shapes[0].width
         actual_left_2 = shapes[1].left
         actual_width_2 = shapes[1].width
-        self.assertEqual(expected_results['expected_num_shapes'], len(shapes))
-        self.assertEqual(expected_results['expected_left_1'], actual_left_1)
-        self.assertEqual(expected_results['expected_width_1'], actual_width_1)
-        self.assertEqual(expected_results['expected_left_2'], actual_left_2)
-        self.assertEqual(expected_results['expected_width_2'], actual_width_2)
+
+        if expected_case == 'num_shapes':
+            self.assertEqual(expected_results['num_shapes'], len(shapes))
+        elif expected_case == 'left_1':
+            self.assertEqual(expected_results['left_1'], actual_left_1)
+        elif expected_case == 'width_1':
+            self.assertEqual(expected_results['width_1'], actual_width_1)
+        elif expected_case == 'left_2':
+            self.assertEqual(expected_results['left_2'], actual_left_2)
+        elif expected_case == 'width_2':
+            self.assertEqual(expected_results['width_2'], actual_width_2)

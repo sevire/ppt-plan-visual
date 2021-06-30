@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Union, Optional
 
 from colour import Color
 from pptx.util import Cm
@@ -14,8 +14,8 @@ class ShapeFormatting:
     def __init__(self,
                  line_colour: Union[Color, None],
                  fill_colour: Union[Color, None],
-                 corner_radius: Union[Cm, None],
-                 text_formatting: TextFormatting
+                 corner_radius: Union[Cm, None] = None,
+                 text_formatting: Optional[TextFormatting] = None
                  ):
         self.line_colour = line_colour
         self.fill_colour = fill_colour
