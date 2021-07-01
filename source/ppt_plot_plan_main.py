@@ -11,7 +11,7 @@ root_logger = logging.getLogger()
 # No args provided so use hard-coded defaults
 
 parameters_01 = {
-    'excel_plan_file': '/Users/thomasdeveloper/Documents/Projects/ppt-plan-visual-data/plan_test_01.xlsx',
+    'excel_plan_file': '/Users/thomasdeveloper/Documents/Projects/ppt-plan-visual-data/PlanningVisualConfig-01a.xlsx',
     'excel_plan_sheet': 'UK-View Plan',
     'excel_plot_cfg_file': '/Users/thomasdeveloper/Documents/Projects/ppt-plan-visual-data/PlanningVisualConfig-01a.xlsx',
     'excel_plot_cfg_sheet': 'PlotConfig',
