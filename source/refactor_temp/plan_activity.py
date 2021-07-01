@@ -158,11 +158,11 @@ class PlanActivity:
                 shape = self.ppt_plot_shape(
                     ppt_shapes_object,
                     self.display_shape,
-                    left,
-                    top,
-                    width,
-                    height,
-                    self.shape_formatting_1
+                    top=top,
+                    left=left,
+                    width=width,
+                    height=height,
+                    shape_formatting=self.shape_formatting_1
                 )
                 shapes.append(shape)
             else:

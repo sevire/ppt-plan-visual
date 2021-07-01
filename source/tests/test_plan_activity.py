@@ -2,6 +2,7 @@ from unittest import TestCase
 
 from colour import Color
 from ddt import ddt, data, unpack
+from pptx import Presentation
 from pptx.util import Cm
 
 from source.refactor_temp.shape_formatting import ShapeFormatting
@@ -19,8 +20,8 @@ plan_visual_config_test_data = {
         'right': Cm(30),
         'track_height': Cm(1),
         'track_gap': Cm(0.5),
-        'min_start_date': None,
-        'max_end_date': None,
+        'min_start_date': parse_date('2021-01-01'),
+        'max_end_date': parse_date('2021-12-31'),
         'milestone_width': None,
         'milestone_text_width': Cm(0.5),
         'activity_text_width': Cm(5),
@@ -31,21 +32,24 @@ plan_visual_config_test_data = {
 }
 display_attribute_test_data = {
     'disp_01': {
-        'line_colour': Color(rgb=(0,0,0)),
-        'fill_colour': Color(rgb=(0,0,0)),
-        'font_colour': Color(rgb=(0,0,0)),
-        'text_layout': Color(rgb=(0,0,0))
+        'line_colour': Color(rgb=(0, 0, 0)),
+        'fill_colour': Color(rgb=(0, 0, 0)),
+        'font_colour': Color(rgb=(0, 0, 0)),
+        'text_layout': Color(rgb=(0, 0, 0)),
+        'corner_radius': Cm(0.1)
     }
 }
 
 layout_attributes_test_records = {
     'layout_01': {
         'swimlane_name': 'yyy',
-        'track_number': 'yyy',
-        'number_of_tracks_to_span': 'yyy',
-        'text_layout': 'yyy'
+        'track_number': 1,
+        'number_of_tracks_to_span': 1,
+        'text_layout': 'shape'
     }
 }
+
+num_days_in_date_range = 365
 
 swimlane_test_data_records = {
     'swim_01': {
@@ -110,6 +114,7 @@ class TestPlanActivity(TestCase):
         display_properties = ShapeFormatting(
             line_colour=display_data['line_colour'],
             fill_colour=display_data['line_colour'],
+            corner_radius=display_data['corner_radius']
         )
 
         done_display_properties = ShapeFormatting(
@@ -117,6 +122,7 @@ class TestPlanActivity(TestCase):
             fill_colour=done_display_data['line_colour'],
         )
         plot_driver = PlotDriver(vis_cfg)
+        plot_driver.num_days_in_date_range = num_days_in_date_range
 
         activity = PlanActivity(
             activity_data['activity_id'],
@@ -133,7 +139,17 @@ class TestPlanActivity(TestCase):
             swimlane_start_track=1,
         )
 
+        pres = Presentation()
+        slide_layout = pres.slide_layouts[0]
+        slide = pres.slides.add_slide(slide_layout)
+        shapes = slide.shapes
+
+        plotted_shapes = activity.plot_ppt_shapes(shapes)
+
+        self.assertEqual(1, len(plotted_shapes))
+        plotted_shape = plotted_shapes[0]
+
         self.assertEqual(exp_res['is_past'], activity.is_past())
         self.assertEqual(exp_res['is_future'], activity.is_future())
         self.assertEqual(exp_res['is_current'], activity.is_current())
-        # self.assertTrue(exp_res['plot_start'], activity._plot_left)
+        self.assertEqual(exp_res['plot_start'], plotted_shape.left)
