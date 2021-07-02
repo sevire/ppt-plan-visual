@@ -5,7 +5,7 @@ from typing import Union
 from colour import Color
 from pptx.util import Cm, Pt
 
-from source.refactor_temp.plottable_element import PlotableElement
+from source.refactor_temp.plotable_element import PlotableElement
 from source.refactor_temp.shape_formatting import ShapeFormatting
 from source.exceptions import PptPlanVisualiserException
 from source.refactor_temp.activity_layout_attributes import ActivityLayoutAttributes

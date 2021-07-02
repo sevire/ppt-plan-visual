@@ -22,5 +22,5 @@ class TextFormatting:
     font_size: Pt = Pt(10)
     font_bold: bool = False
     font_italic: bool = False
-    font_colour: Color = Color(rgb=(1, 1, 1))
+    font_colour: Color = Color(rgb=(0.1, 0.1, 0.1))
 

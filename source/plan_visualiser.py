@@ -11,11 +11,16 @@ from pptx.dml.color import RGBColor
 from pptx.enum.shapes import MSO_AUTO_SHAPE_TYPE, MSO_CONNECTOR_TYPE
 from pptx.enum.text import PP_PARAGRAPH_ALIGNMENT as PP_ALIGN
 from pptx.enum.text import MSO_VERTICAL_ANCHOR as MSO_ANCHOR
+from pptx.util import Cm
 
 from source.excel_plan import ExcelPlan
 from source.exceptions import PptPlanVisualiserException
 from source.refactor_temp.plan_activity import PlanActivity
 from source.plot_driver import PlotDriver
+from source.refactor_temp.plotable_element import PlotableElement
+from source.refactor_temp.shape_formatting import ShapeFormatting
+from source.refactor_temp.text_formatting import TextFormatting
+from source.refactor_temp.visual_element_shape import VisualElementShape
 from source.utilities import get_path_name_ext, SwimlaneManager, first_day_of_month, iterate_months, \
     num_months_between_dates, last_day_of_month, is_current, is_future, is_past
 
@@ -251,7 +256,7 @@ class PlanVisualiser:
         shape.fill.background()
         shape.line.fill.background()
 
-        # self.add_text_to_shape(shape, text, format_data, text_layout)
+        self.add_text_to_shape(shape, text, format_data, text_layout)
 
     def add_text_to_shape(self, shape, text, format_data, text_layout):
         text_frame = shape.text_frame
@@ -357,12 +362,9 @@ class PlanVisualiser:
             bottom = self.plot_driver.track_number_to_y_coordinate(end_track) + self.plot_config.track_height + (
                         self.plot_config.track_gap / 2)
             left = self.plot_config.left
-            width = self.plot_config.right - self.plot_config.left
+            right = self.plot_config.right
+            width = right - self.plot_config.left
             height = bottom - top
-
-            shape = self.shapes.add_shape(
-                MSO_AUTO_SHAPE_TYPE.RECTANGLE, left, top, width, height
-            )
 
             # For the purposes of this decision, the first row is 1 (odd)
             if row_number % 2 == 0:
@@ -371,10 +373,28 @@ class PlanVisualiser:
                 format_info = format_data['swimlane_format_odd']
             # Hard code alignment for now.  May need to re-visit
             format_info['text_align'] = 'left'
+            shape_formatting = ShapeFormatting.from_dict(format_info, self.plot_config)
             # ToDo: Add configuration of horizontal alignment for swimlanes
 
-            self.shape_fill(shape, format_info)
-            self.shape_line(shape, format_info)
+            text_formatting = TextFormatting(vertical_align='top', horizontal_align='left')
+
+            plottable = PlotableElement(
+                VisualElementShape.RECTANGLE,
+                top,
+                left,
+                bottom,
+                right,
+                shape_formatting,
+                swimlane,
+                text_formatting
+            )
+            plottable.plot_ppt(self.shapes)
+            # shape = self.shapes.add_shape(
+            #     MSO_AUTO_SHAPE_TYPE.RECTANGLE, left, top, width, height
+            # )
+
+            # self.shape_fill(shape, format_info)
+            # self.shape_line(shape, format_info)
             # self.add_text_to_shape(shape, swimlane, format_info, "swimlane")
 
     def plot_month_bar(self):
@@ -405,7 +425,7 @@ class PlanVisualiser:
             month = month_name[month_start_date.month][:3]
 
             self.plot_shape(MSO_AUTO_SHAPE_TYPE.RECTANGLE, left, top, width, height, shape_format)
-            self.plot_text_for_shape(left, top, width, height, month, shape_format, 'shape')
+            # self.plot_text_for_shape(left, top, width, height, month, shape_format, 'shape')
 
     @classmethod
     def from_excel_plan(
