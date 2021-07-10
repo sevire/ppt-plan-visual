@@ -133,3 +133,4 @@ dmypy.json
 /dist/
 /.idea/workspace.xml
 /.idea/sonarlint/issuestore/*
+/.idea/dataSources.local.xml

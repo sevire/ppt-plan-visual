@@ -356,22 +356,34 @@ class PlanActivity:
 
     def plot_ppt_text_shape(self, ppt_shapes_object):
         text_top, text_left, text_bottom, text_right, text_align = self.get_ppt_text_coords()
-        shape_formatting = ShapeFormatting(
-            None,
-            None,
-            None,
-            None
-        )
+
+        left_margin = Cm(0)
+        right_margin = Cm(0)
+        margin_adjust = round(self.plan_visual_config.milestone_width / 2)
+        if self.activity_type == "milestone":
+            # Need to add margin to move text outside milestone shape
+            if text_align == "right":
+                right_margin = margin_adjust
+            elif text_align == "left":
+                left_margin = margin_adjust
+
         text_formatting = TextFormatting(
             margin_top=Cm(0),
-            margin_left=Cm(0),
+            margin_left=left_margin,
             margin_bottom=Cm(0),
-            margin_right=Cm(0),
+            margin_right=right_margin,
             vertical_align='middle',
+            horizontal_align=text_align,
             font_size=Pt(8),
             font_bold=False,
             font_italic=False,
             font_colour=Color(rgb=(0, 0, 0))
+        )
+        shape_formatting = ShapeFormatting(
+            line_colour=None,
+            fill_colour=None,
+            corner_radius=None,
+            text_formatting=text_formatting
         )
         plot_element = PlotableElement(
             shape=VisualElementShape.RECTANGLE,
