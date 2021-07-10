@@ -105,7 +105,7 @@ class PlanVisualiser:
         self.plot_vertical_line(date.today())
         self.prs.save(self.slides_out_path)
 
-    def plot_activity(self, activity_description, start_date, end_date, swimlane, track_number, num_tracks,
+    def x_plot_activity(self, activity_description, start_date, end_date, swimlane, track_number, num_tracks,
                       todo_properties, text_layout, done_properties):
         """
 
@@ -206,7 +206,7 @@ class PlanVisualiser:
             self.plot_text(milestone_description, milestone_text_left, top, milestone_text_width, milestone_height,
                            properties, text_layout)
 
-    def plot_shape(self, shape_type, left, top, width, height, shape_properties):
+    def x_plot_shape(self, shape_type, left, top, width, height, shape_properties):
         assert (left >= 0)
         assert (top >= 0)
         assert (width >= 0)
@@ -422,9 +422,23 @@ class PlanVisualiser:
             else:
                 shape_format = self.format_config['month_shape_format_even']
 
-            month = month_name[month_start_date.month][:3]
+            shape_formatting = ShapeFormatting.from_dict(shape_format, self.plot_config)
+            text_formatting = TextFormatting()
 
-            self.plot_shape(MSO_AUTO_SHAPE_TYPE.RECTANGLE, left, top, width, height, shape_format)
+            month = month_name[month_start_date.month][:3]
+            bottom = top + height
+            right = left + width
+
+            plotable = PlotableElement(
+                VisualElementShape.RECTANGLE,
+                top, left, bottom, right,
+                shape_formatting,
+                month,
+                text_formatting)
+
+            plotable.plot_ppt(self.shapes)
+
+            # self.plot_shape(MSO_AUTO_SHAPE_TYPE.RECTANGLE, left, top, width, height, shape_format)
             # self.plot_text_for_shape(left, top, width, height, month, shape_format, 'shape')
 
     @classmethod
