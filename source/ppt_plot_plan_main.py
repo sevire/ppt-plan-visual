@@ -13,23 +13,13 @@ root_logger = logging.getLogger()
 parameters_01 = {
     'excel_plan_file': '/Users/thomasdeveloper/Documents/Projects/ppt-plan-visual-data/PlanningVisualConfig-01a.xlsx',
     'excel_plan_sheet': 'UK-View Plan',
-    'excel_plot_cfg_file': '/Users/thomasdeveloper/Documents/Projects/ppt-plan-visual-data/PlanningVisualConfig-01a.xlsx',
-    'excel_plot_cfg_sheet': 'PlotConfig',
-    'excel_format_cfg_file': '/Users/thomasdeveloper/Documents/Projects/ppt-plan-visual-data/PlanningVisualConfig-01a.xlsx',
-    'excel_format_cfg_sheet': 'FormatConfig',
-    'swimlanes_cfg_file': '/Users/thomasdeveloper/Documents/Projects/ppt-plan-visual-data/PlanningVisualConfig-01a.xlsx',
-    'swimlanes_cfg_sheet': 'Swimlanes',
+    'excel_config_workbook': '/Users/thomasdeveloper/Documents/Projects/ppt-plan-visual-data/PlanningVisualConfig-01a.xlsx',
     'ppt_template_file': '/Users/thomasdeveloper/Documents/Projects/ppt-plan-visual-data/UK-ViewPlanOnePager.pptx',
 }
 parameters_02 = {
     'excel_plan_file': '~/Downloads/KBT-Delivery.xlsx',
     'excel_plan_sheet': 'KBT-Delivery',
-    'excel_plot_cfg_file': '~/PyCharmProjects/ppt_plan_visual_testing/KBT-VisualConfig.xlsx',
-    'excel_plot_cfg_sheet': 'PlotConfig',
-    'excel_format_cfg_file': '~/PyCharmProjects/ppt_plan_visual_testing/KBT-VisualConfig.xlsx',
-    'excel_format_cfg_sheet': 'FormatConfig',
-    'swimlanes_cfg_file': '~/PyCharmProjects/ppt_plan_visual_testing/KBT-VisualConfig.xlsx',
-    'swimlanes_cfg_sheet': 'Swimlanes',
+    'excel_config_workbook': '~/PyCharmProjects/ppt_plan_visual_testing/KBT-VisualConfig.xlsx',
     'ppt_template_file': '/Users/Development/PycharmProjects/ppt_plan_visual_testing/KBT-DeliveryOnePager.pptx',
 }
 
@@ -37,6 +27,15 @@ parameters_to_use = parameters_02  # Set to whichever we are testing with or run
 
 
 def get_parameters():
+    """
+    Gets command line parameters.  There should be 4 parameters which are:
+    - Excel Plan File
+    - Excel Config File
+    - Excel Plan Sheet Name: Defaults to the name of the file as that is what is used in SmartSheets
+    - PPT Template File: Takes first slide as template for output.
+
+    :return:
+    """
     args = sys.argv
     # There should either be no parameters or 7, otherwise report error and finish
     # Note the length of argv is one more than the number of arguments as the file is always first.
@@ -46,19 +45,14 @@ def get_parameters():
 
     if len(args) == 8:
         parameters = {
-            'excel_plan_file': args[1],
+            'excel_plan_workbook': args[1],
             'excel_plan_sheet': args[2],
-            'excel_plot_cfg_file': args[3],
-            'excel_plot_cfg_sheet': args[4],
-            'excel_format_cfg_file': args[3],
-            'excel_format_cfg_sheet': args[5],
-            'swimlanes_cfg_file': args[3],
-            'swimlanes_cfg_sheet': args[6],
-            'ppt_template_file': args[7]
+            'excel_config_workbook': args[3],
+            'ppt_template_file': args[4],
         }
         return parameters
 
-    root_logger.error(f'Wrong number of parameters provided ({len(args)-1}).  Should be 0 or 6')
+    root_logger.error(f'Wrong number of parameters provided ({len(args)-1}).  Should be 0 or 4')
     return None
 
 
@@ -82,49 +76,14 @@ def configure_logger(logger):
 
 def main():
     configure_logger(root_logger)
-    print("Plan Visualiser - starting...")
-    print("Initiating logging")
-    root_logger.debug('Plan to PowerPoint plotting programme starting...')
-    root_logger.info(f"Running from IDE, using fixed arguments")
-
     parameters = get_parameters()
     if parameters is not None:
         excel_plan_file = parameters['excel_plan_file']
         excel_plan_sheet = parameters['excel_plan_sheet']
-        excel_plot_cfg_file = parameters['excel_plot_cfg_file']
-        excel_plot_cfg_sheet = parameters['excel_plot_cfg_sheet']
-        excel_format_cfg_file = parameters['excel_format_cfg_file']
-        excel_format_cfg_sheet = parameters['excel_format_cfg_sheet']
-        swimlanes_cfg_file = parameters['swimlanes_cfg_file']
-        swimlanes_cfg_sheet = parameters['swimlanes_cfg_sheet']
+        excel_config_workbook = parameters['excel_config_workbook']
         ppt_template_file = parameters['ppt_template_file']
 
-        root_logger.info(f'Using plan data from {excel_plan_file}')
-
-        plot_config_object = ExcelPlotConfig(excel_plot_cfg_file, excel_sheet=excel_plot_cfg_sheet)
-        plot_area_config = plot_config_object.parse_plot_config()
-
-        excel_format_config_object = ExcelFormatConfig(excel_format_cfg_file, excel_sheet=excel_format_cfg_sheet)
-        format_config = excel_format_config_object.parse_format_config()
-
-        extracted_plan_data = ExcelPlan.read_plan_data(
-            excel_plan_file,
-            excel_plan_sheet,
-            format_config,
-            plot_area_config
-        )
-
-        swimlane_config_object = ExcelSwimlaneConfig(swimlanes_cfg_file, excel_sheet=swimlanes_cfg_sheet)
-        swimlanes = swimlane_config_object.parse_swimlane_config()
-
-        visualiser = PlanVisualiser(
-            extracted_plan_data,
-            plot_area_config,
-            format_config,
-            ppt_template_file,
-            swimlanes
-        )
-
+        visualiser = PlanVisualiser.from_excel(excel_plan_file, excel_config_workbook, ppt_template_file, excel_plan_sheet)
         visualiser.plot_slide()
 
 

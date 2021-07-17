@@ -11,8 +11,8 @@ from pptx.dml.color import RGBColor
 from pptx.enum.shapes import MSO_AUTO_SHAPE_TYPE, MSO_CONNECTOR_TYPE
 from pptx.enum.text import PP_PARAGRAPH_ALIGNMENT as PP_ALIGN
 from pptx.enum.text import MSO_VERTICAL_ANCHOR as MSO_ANCHOR
-from pptx.util import Cm
 
+from source.excel_config import ExcelPlotConfig, ExcelFormatConfig, ExcelSwimlaneConfig
 from source.excel_plan import ExcelPlan
 from source.exceptions import PptPlanVisualiserException
 from source.refactor_temp.plan_activity import PlanActivity
@@ -76,6 +76,38 @@ class PlanVisualiser:
         self.swimlanes = swimlanes
         self.swimlane_data = self.extract_swimlane_data()
 
+    @classmethod
+    def from_excel(cls, excel_plan_file, excel_config_workbook, ppt_template_file, excel_plan_sheet=None):
+        """
+        Reads plan and configuration information from Excel workbooks and then creates instance of PlanVisualiser
+
+        :return:
+        """
+        print("Plan Visualiser - starting...")
+        print("Initiating logging")
+        root_logger.debug('Plan to PowerPoint plotting programme starting...')
+        root_logger.info(f"Running from IDE, using fixed arguments")
+
+        root_logger.info(f'Using plan data from {excel_plan_file}')
+
+        plot_config_object = ExcelPlotConfig(excel_config_workbook, excel_sheet='PlotConfig')
+        plot_area_config = plot_config_object.parse_plot_config()
+
+        excel_format_config_object = ExcelFormatConfig(excel_config_workbook, excel_sheet='FormatConfig')
+        shape_config = excel_format_config_object.parse_format_config()
+
+        plan_data = ExcelPlan.read_plan_data(
+            excel_plan_file,
+            excel_plan_sheet,
+            shape_config,
+            plot_area_config
+        )
+
+        swimlane_config_object = ExcelSwimlaneConfig(excel_config_workbook, excel_sheet='Swimlanes')
+        swimlanes = swimlane_config_object.parse_swimlane_config()
+
+        return cls(plan_data, plot_area_config, shape_config, ppt_template_file, swimlanes)
+
     def plot_slide(self):
         """
         Opens a supplied template file in order to allow consistency with other slides in a deck.
@@ -104,128 +136,6 @@ class PlanVisualiser:
 
         self.plot_vertical_line(date.today())
         self.prs.save(self.slides_out_path)
-
-    def x_plot_activity(self, activity_description, start_date, end_date, swimlane, track_number, num_tracks,
-                      todo_properties, text_layout, done_properties):
-        """
-
-        :param activity_description:
-        :param start_date:
-        :param end_date:
-        :param swimlane:
-        :param track_number:
-        :param num_tracks:
-        :param todo_properties:
-        :param text_layout:
-        :param done_properties:
-        :return:
-
-        Plots an activity on the slide (rather than a milestone)
-
-        Plots rectangle for the activity of the appropriate length based on the length of the activity and
-        places on the right track at the right horizontal position based on start date.
-
-        If a done_properties value has been provided then this is a task where we need to indicate any past
-        part of the activity as "Done" using the format provided to indicate that (typically this would be blue).
-
-        So if the activity is current (today's date is between start and end) we have to plot two
-        boxes of different colours, but if the activity is completely in the past we plot one box with the
-        done formatting.
-        """
-        swimlane_start = self.swimlane_data[swimlane]['start_track']
-
-        top = self.plot_driver.track_number_to_y_coordinate(swimlane_start + track_number - 1)
-        height = self.plot_driver.height_of_track(num_tracks)
-
-        # There are three cases to consider.
-        # - There are no done_properties provided or the activity is wholly in the future
-        #   * One rectangle with todo_properties
-        # - There are done_properties provided and the activity is current
-        #   * One rectangle for done period with done_properties
-        #   * One rectangle for still to do period with todo_properties
-        # - There are done_properties provided and the activity is wholly in the past
-        #   * One rectangle with todo_properties
-
-        if done_properties is None or is_future(start_date, end_date):
-            left, right, width = self.plot_driver.shape_parameters(start_date, end_date)
-
-            self.plot_shape(MSO_AUTO_SHAPE_TYPE.ROUNDED_RECTANGLE, left, top, width, height, todo_properties)
-
-        elif done_properties is not None and is_current(start_date, end_date):
-            # One rectangle for done period with done_properties
-            # One rectangle for still to do period with todo_properties
-
-            done_left, done_right, done_width = self.plot_driver.shape_parameters(start_date, date.today(),
-                                                                                  gap_flag=False)
-            self.plot_shape(MSO_AUTO_SHAPE_TYPE.ROUNDED_RECTANGLE, done_left, top, done_width, height, done_properties)
-
-            todo_left, todo_right, todo_width = self.plot_driver.shape_parameters(date.today(), end_date,
-                                                                                  gap_flag=True)
-            self.plot_shape(MSO_AUTO_SHAPE_TYPE.ROUNDED_RECTANGLE, todo_left, top, todo_width, height, todo_properties)
-        elif done_properties is not None and is_past(start_date, end_date):
-            # NOTE this test should always be true if previous two tests false but this is belt and braces
-
-            # One rectangle with todo_properties
-            left, right, width = self.plot_driver.shape_parameters(start_date, date.today())
-
-            self.plot_shape(MSO_AUTO_SHAPE_TYPE.ROUNDED_RECTANGLE, left, top, width, height, done_properties)
-
-        else:
-            # Shouldn't get to here so raise an exception
-            raise PptPlanVisualiserException("Shouldn't get here")
-
-        # Text is same plot whether we are plotting as two activities or one
-        left, right, width = self.plot_driver.shape_parameters(start_date, end_date)
-        self.plot_text_for_shape(left, top, width, height, activity_description, todo_properties, text_layout)
-
-    def plot_milestone(self, milestone_description, start_date, swimlane, track_number, properties, text_layout):
-        swimlane_start = self.swimlane_data[swimlane]['start_track']
-        milestone_width = self.plot_config.milestone_width
-        milestone_height = self.plot_config.track_height
-
-        left = self.plot_driver.milestone_left(start_date, milestone_width)
-        top = self.plot_driver.track_number_to_y_coordinate(swimlane_start + track_number - 1)
-
-        shape = self.shapes.add_shape(
-            MSO_AUTO_SHAPE_TYPE.DIAMOND, left, top, milestone_width, milestone_height
-        )
-
-        self.shape_fill(shape, properties)
-        self.shape_line(shape, properties)
-
-        if text_layout == "Right":
-            milestone_text_width = self.plot_config.milestone_text_width
-            milestone_text_left = left + milestone_width
-            properties['text_align'] = 'left'
-            self.plot_text(milestone_description, milestone_text_left, top, milestone_text_width, milestone_height,
-                           properties, text_layout)
-        else:  # Default is left
-            milestone_text_width = self.plot_config.milestone_text_width
-            milestone_text_left = left - milestone_text_width
-            properties.text_align = 'right'
-            self.plot_text(milestone_description, milestone_text_left, top, milestone_text_width, milestone_height,
-                           properties, text_layout)
-
-    def x_plot_shape(self, shape_type, left, top, width, height, shape_properties):
-        assert (left >= 0)
-        assert (top >= 0)
-        assert (width >= 0)
-        assert (height >= 0)
-
-        root_logger.debug(f'Plotting shape: type={shape_type}')
-        root_logger.debug(f'Plotting shape: (left, top, width, height)={left},{top},{width},{height}')
-        shape = self.shapes.add_shape(
-            shape_type, left, top, width, height
-        )
-
-        # Adjust rounded corner radius
-        if shape_type == MSO_AUTO_SHAPE_TYPE.ROUNDED_RECTANGLE:
-            target_radius = shape_properties['corner_radius']
-            adjustment_value = target_radius / height
-            shape.adjustments[0] = adjustment_value
-
-        self.shape_fill(shape, shape_properties)
-        self.shape_line(shape, shape_properties)
 
     def plot_text_for_shape(self, left, top, width, height, text, shape_properties, text_layout):
         activity_text_width = self.plot_config.min_activity_text_width
@@ -437,26 +347,6 @@ class PlanVisualiser:
                 text_formatting)
 
             plotable.plot_ppt(self.shapes)
-
-            # self.plot_shape(MSO_AUTO_SHAPE_TYPE.RECTANGLE, left, top, width, height, shape_format)
-            # self.plot_text_for_shape(left, top, width, height, month, shape_format, 'shape')
-
-    @classmethod
-    def from_excel_plan(
-            cls,
-            plan_data_excel_path,
-            plan_data_sheet_name,
-            format_properties_list,
-            plan_visual_config
-    ):
-        extracted_plan_data = ExcelPlan.read_plan_data(
-            plan_data_excel_path,
-            plan_data_sheet_name,
-            format_properties_list,
-            plan_visual_config
-        )
-
-        return extracted_plan_data
 
     def extract_swimlane_data(self):
         """
