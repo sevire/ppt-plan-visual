@@ -1,4 +1,4 @@
-# PowerPoint Plan Visual - Overview
+# PowerPoint Plan Visual - Overview.
 
 Python app to generate a PowerPoint visualisation of a project.
 
