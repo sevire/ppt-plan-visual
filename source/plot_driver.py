@@ -3,8 +3,7 @@ from datetime import datetime
 import pandas as pd
 from dateutil.utils import today
 
-from source.refactor_temp.visual_element_shape import VisualElementShape
-from source.utilities import day_increment
+from source.visual_element_shape import VisualElementShape
 
 
 class PlotDriver:

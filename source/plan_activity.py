@@ -5,13 +5,13 @@ from typing import Union
 from colour import Color
 from pptx.util import Cm, Pt
 
-from source.refactor_temp.plotable_element import PlotableElement
-from source.refactor_temp.shape_formatting import ShapeFormatting
+from source.plotable_element import PlotableElement
+from source.shape_formatting import ShapeFormatting
 from source.exceptions import PptPlanVisualiserException
-from source.refactor_temp.activity_layout_attributes import ActivityLayoutAttributes
+from source.activity_layout_attributes import ActivityLayoutAttributes
 from source.plot_driver import PlotDriver
-from source.refactor_temp.text_formatting import TextFormatting
-from source.refactor_temp.visual_element_shape import VisualElementShape
+from source.text_formatting import TextFormatting
+from source.visual_element_shape import VisualElementShape
 
 
 @dataclass

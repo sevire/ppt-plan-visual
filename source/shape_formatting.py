@@ -4,7 +4,7 @@ from colour import Color
 from pptx.util import Cm
 
 from source.plot_driver import PlotDriver
-from source.refactor_temp.text_formatting import TextFormatting
+from source.text_formatting import TextFormatting
 
 
 class ShapeFormatting:

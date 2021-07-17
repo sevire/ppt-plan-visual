@@ -14,15 +14,14 @@ from pptx.enum.text import MSO_VERTICAL_ANCHOR as MSO_ANCHOR
 
 from source.excel_config import ExcelPlotConfig, ExcelFormatConfig, ExcelSwimlaneConfig
 from source.excel_plan import ExcelPlan
-from source.exceptions import PptPlanVisualiserException
-from source.refactor_temp.plan_activity import PlanActivity
+from source.plan_activity import PlanActivity
 from source.plot_driver import PlotDriver
-from source.refactor_temp.plotable_element import PlotableElement
-from source.refactor_temp.shape_formatting import ShapeFormatting
-from source.refactor_temp.text_formatting import TextFormatting
-from source.refactor_temp.visual_element_shape import VisualElementShape
+from source.plotable_element import PlotableElement
+from source.shape_formatting import ShapeFormatting
+from source.text_formatting import TextFormatting
+from source.visual_element_shape import VisualElementShape
 from source.utilities import get_path_name_ext, SwimlaneManager, first_day_of_month, iterate_months, \
-    num_months_between_dates, last_day_of_month, is_current, is_future, is_past
+    num_months_between_dates, last_day_of_month
 
 root_logger = logging.getLogger()
 

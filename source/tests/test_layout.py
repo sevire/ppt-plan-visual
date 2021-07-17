@@ -4,13 +4,12 @@ from ddt import ddt, unpack, data
 from pptx import Presentation
 from pptx.util import Cm
 from source.plot_driver import PlotDriver
-from source.refactor_temp.activity_layout_attributes import ActivityLayoutAttributes
-from source.refactor_temp.plan_activity import PlanActivity
-from source.refactor_temp.shape_formatting import ShapeFormatting
-from source.refactor_temp.text_formatting import TextFormatting
-from source.refactor_temp.visual_element_shape import VisualElementShape
+from source.activity_layout_attributes import ActivityLayoutAttributes
+from source.plan_activity import PlanActivity
+from source.shape_formatting import ShapeFormatting
+from source.text_formatting import TextFormatting
+from source.visual_element_shape import VisualElementShape
 from source.tests.testing_utilities import parse_date
-from unittest.mock import Mock
 
 visual_parameters_01 = {
     'visual_start_date': parse_date('2021-01-01'),

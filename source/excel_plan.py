@@ -2,10 +2,9 @@ import logging
 import pandas as pd
 
 from source.exceptions import PptPlanVisualiserException
-from source.refactor_temp.activity_layout_attributes import ActivityLayoutAttributes
-from source.refactor_temp.plan_activity import PlanActivity
-from source.refactor_temp.shape_formatting import ShapeFormatting
-from source.refactor_temp.visual_element_shape import VisualElementShape
+from source.activity_layout_attributes import ActivityLayoutAttributes
+from source.plan_activity import PlanActivity
+from source.shape_formatting import ShapeFormatting
 
 root_logger = logging.getLogger()
 

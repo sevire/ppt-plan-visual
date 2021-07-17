@@ -3,9 +3,9 @@ from pptx.shapes.shapetree import SlideShapes
 from pptx.util import Cm
 from pptx.enum.text import PP_PARAGRAPH_ALIGNMENT as PP_ALIGN
 from pptx.enum.text import MSO_VERTICAL_ANCHOR as MSO_ANCHOR
-from source.refactor_temp.shape_formatting import ShapeFormatting
-from source.refactor_temp.text_formatting import TextFormatting
-from source.refactor_temp.visual_element_shape import VisualElementShape
+from source.shape_formatting import ShapeFormatting
+from source.text_formatting import TextFormatting
+from source.visual_element_shape import VisualElementShape
 
 
 class PlotableElement:
