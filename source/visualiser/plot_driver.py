@@ -3,7 +3,7 @@ from datetime import datetime
 import pandas as pd
 from dateutil.utils import today
 
-from source.visual_element_shape import VisualElementShape
+from source.visualiser.visual_element_shape import VisualElementShape
 
 
 class PlotDriver:

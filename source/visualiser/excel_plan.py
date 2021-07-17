@@ -1,10 +1,10 @@
 import logging
 import pandas as pd
 
-from source.exceptions import PptPlanVisualiserException
-from source.activity_layout_attributes import ActivityLayoutAttributes
-from source.plan_activity import PlanActivity
-from source.shape_formatting import ShapeFormatting
+from source.visualiser.exceptions import PptPlanVisualiserException
+from source.visualiser.activity_layout_attributes import ActivityLayoutAttributes
+from source.visualiser.plan_activity import PlanActivity
+from source.visualiser.shape_formatting import ShapeFormatting
 
 root_logger = logging.getLogger()
 

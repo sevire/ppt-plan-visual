@@ -2,9 +2,7 @@ import logging
 import sys
 import time
 from logging.handlers import RotatingFileHandler
-from source.excel_config import ExcelFormatConfig, ExcelPlotConfig, ExcelSwimlaneConfig
-from source.excel_plan import ExcelPlan
-from source.plan_visualiser import PlanVisualiser
+from source.visualiser.plan_visualiser import PlanVisualiser
 
 root_logger = logging.getLogger()
 

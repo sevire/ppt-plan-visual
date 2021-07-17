@@ -12,15 +12,15 @@ from pptx.enum.shapes import MSO_AUTO_SHAPE_TYPE, MSO_CONNECTOR_TYPE
 from pptx.enum.text import PP_PARAGRAPH_ALIGNMENT as PP_ALIGN
 from pptx.enum.text import MSO_VERTICAL_ANCHOR as MSO_ANCHOR
 
-from source.excel_config import ExcelPlotConfig, ExcelFormatConfig, ExcelSwimlaneConfig
-from source.excel_plan import ExcelPlan
-from source.plan_activity import PlanActivity
-from source.plot_driver import PlotDriver
-from source.plotable_element import PlotableElement
-from source.shape_formatting import ShapeFormatting
-from source.text_formatting import TextFormatting
-from source.visual_element_shape import VisualElementShape
-from source.utilities import get_path_name_ext, SwimlaneManager, first_day_of_month, iterate_months, \
+from source.visualiser.excel_config import ExcelPlotConfig, ExcelFormatConfig, ExcelSwimlaneConfig
+from source.visualiser.excel_plan import ExcelPlan
+from source.visualiser.plan_activity import PlanActivity
+from source.visualiser.plot_driver import PlotDriver
+from source.visualiser.plotable_element import PlotableElement
+from source.visualiser.shape_formatting import ShapeFormatting
+from source.visualiser.text_formatting import TextFormatting
+from source.visualiser.visual_element_shape import VisualElementShape
+from source.visualiser.utilities import get_path_name_ext, SwimlaneManager, first_day_of_month, iterate_months, \
     num_months_between_dates, last_day_of_month
 
 root_logger = logging.getLogger()
