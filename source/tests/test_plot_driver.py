@@ -2,7 +2,7 @@ from unittest import TestCase
 from ddt import ddt, data, unpack
 from pptx.util import Cm
 
-from source.plot_driver import PlotDriver
+from source.visualiser.plot_driver import PlotDriver
 from source.tests.testing_utilities import parse_date, date_to_points
 
 tpc = {  # Test Plot Config

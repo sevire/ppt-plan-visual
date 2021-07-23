@@ -76,7 +76,7 @@ def main():
     configure_logger(root_logger)
     parameters = get_parameters()
     if parameters is not None:
-        excel_plan_file = parameters['excel_plan_file']
+        excel_plan_file = parameters['excel_plan_workbook']
         excel_plan_sheet = parameters['excel_plan_sheet']
         excel_config_workbook = parameters['excel_config_workbook']
         ppt_template_file = parameters['ppt_template_file']

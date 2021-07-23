@@ -1,6 +1,6 @@
 from unittest import TestCase
 from ddt import ddt, data, unpack
-import source.utilities as ut
+import source.visualiser.utilities as ut
 from source.tests.testing_utilities import parse_date
 
 first_day_of_month_test_data = [

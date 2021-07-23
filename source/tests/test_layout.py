@@ -3,12 +3,12 @@ from colour import Color
 from ddt import ddt, unpack, data
 from pptx import Presentation
 from pptx.util import Cm
-from source.plot_driver import PlotDriver
-from source.activity_layout_attributes import ActivityLayoutAttributes
-from source.plan_activity import PlanActivity
-from source.shape_formatting import ShapeFormatting
-from source.text_formatting import TextFormatting
-from source.visual_element_shape import VisualElementShape
+from source.visualiser.plot_driver import PlotDriver
+from source.visualiser.activity_layout_attributes import ActivityLayoutAttributes
+from source.visualiser.plan_activity import PlanActivity
+from source.visualiser.shape_formatting import ShapeFormatting
+from source.visualiser.text_formatting import TextFormatting
+from source.visualiser.visual_element_shape import VisualElementShape
 from source.tests.testing_utilities import parse_date
 
 visual_parameters_01 = {

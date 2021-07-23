@@ -5,12 +5,13 @@ from ddt import ddt, data, unpack
 from pptx import Presentation
 from pptx.util import Cm
 
-from source.shape_formatting import ShapeFormatting
-from source.activity_layout_attributes import ActivityLayoutAttributes
-from source.plan_activity import PlanActivity
-from source.plot_driver import PlotDriver
+from source.visualiser.activity_layout_attributes import ActivityLayoutAttributes
+from source.visualiser.plan_activity import PlanActivity
+from source.visualiser.plot_driver import PlotDriver
 from source.tests.testing_utilities import parse_date
-from source.visual_element_shape import VisualElementShape
+from source.visualiser.visual_element_shape import VisualElementShape
+
+from source.visualiser.shape_formatting import ShapeFormatting
 
 plan_visual_config_test_data = {
     'vis_cfg_01': {
