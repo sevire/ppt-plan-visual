@@ -35,7 +35,7 @@ jobs:
       run: |
         pytest
     - name: Create command line app
-      run: ./create_command_line_app.sh
+      run: ./devops/create_command_line_app.sh
     - name: Commit the newly created command line app file
       run: |
         git config --local user.email "tbg-github@genonline.co.uk"
