@@ -118,8 +118,7 @@ class PlotableElement:
             text_frame.margin_bottom = self.text_formatting.margin_bottom
             text_frame.margin_left = self.text_formatting.margin_left
             text_frame.margin_right = self.text_formatting.margin_right
-
-            self._text_vertical_alignment(self.text_formatting)
+            text_frame.vertical_anchor = self._text_vertical_alignment(self.text_formatting.vertical_align)
 
             paragraph = text_frame.paragraphs[0]
             run = paragraph.add_run()
@@ -139,11 +138,11 @@ class PlotableElement:
     @staticmethod
     def _text_vertical_alignment(alignment):
         if alignment == "top":
-            alignment.vertical_anchor = MSO_ANCHOR.TOP
+            return MSO_ANCHOR.TOP
         elif alignment == "bottom":
-            alignment.vertical_anchor = MSO_ANCHOR.BOTTOM
+            return MSO_ANCHOR.BOTTOM
         else:
-            alignment.vertical_anchor = MSO_ANCHOR.MIDDLE
+            return MSO_ANCHOR.MIDDLE
 
     @staticmethod
     def _text_horizontal_alignment(format_text_align):

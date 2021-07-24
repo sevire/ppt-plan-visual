@@ -357,8 +357,8 @@ class PlanActivity:
     def plot_ppt_text_shape(self, ppt_shapes_object):
         text_top, text_left, text_bottom, text_right, text_align = self.get_ppt_text_coords()
 
-        left_margin = Cm(0)
-        right_margin = Cm(0)
+        left_margin = self.plan_visual_config.text_margin
+        right_margin = self.plan_visual_config.text_margin
         margin_adjust = round(self.plan_visual_config.milestone_width / 2)
         if self.activity_type == "milestone":
             # Need to add margin to move text outside milestone shape

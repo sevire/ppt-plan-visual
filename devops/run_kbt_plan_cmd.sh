@@ -1,12 +1,9 @@
 #!/usr/bin/env bash
 
 ../ppt_plot_plan_main \
-'/Users/LivestockInternational/Downloads/KBT-Delivery.xlsx' \
+'/Users/Development/Downloads/KBT-Delivery.xlsx' \
 'KBT-Delivery' \
-'/Users/livestockinformation/Livestock Information Ltd/Added Value - Knowledge-Based Trading/Planning/Thomas/KBT-VisualConfig.xlsx' \
-'PlotConfig' \
-'FormatConfig' \
-'Swimlanes' \
-'/Users/livestockinformation/Livestock Information Ltd/Added Value - Knowledge-Based Trading/Planning/Thomas/KBT-PlanOnePager.pptx'
+'/Users/Development/PycharmProjects/ppt-plan-visual/source/tests/test_resources/input_files/config_files/KBT-VisualConfig.xlsx' \
+'/Users/Development/PycharmProjects/ppt-plan-visual/source/tests/test_resources/input_files/ppt_templates/PlanVisual-01.pptx'
 
-rm '/Users/livestockinformation/Downloads/KBT-Delivery.xlsx'
+rm '/Users/Development/Downloads/KBT-Delivery.xlsx'

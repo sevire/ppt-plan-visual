@@ -285,7 +285,14 @@ class PlanVisualiser:
             shape_formatting = ShapeFormatting.from_dict(format_info, self.plot_config)
             # ToDo: Add configuration of horizontal alignment for swimlanes
 
-            text_formatting = TextFormatting(vertical_align='top', horizontal_align='left')
+            text_formatting = TextFormatting(
+                vertical_align='top',
+                horizontal_align='left',
+                margin_top=self.plot_config.text_margin,
+                margin_bottom=self.plot_config.text_margin,
+                margin_left=self.plot_config.text_margin,
+                margin_right=self.plot_config.text_margin,
+            )
 
             plottable = PlotableElement(
                 VisualElementShape.RECTANGLE,

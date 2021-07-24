@@ -9,16 +9,16 @@ root_logger = logging.getLogger()
 # No args provided so use hard-coded defaults
 
 parameters_01 = {
-    'excel_plan_file': '/Users/thomasdeveloper/Documents/Projects/ppt-plan-visual-data/PlanningVisualConfig-01a.xlsx',
+    'excel_plan_workbook': '/Users/thomasdeveloper/Documents/Projects/ppt-plan-visual-data/PlanningVisualConfig-01a.xlsx',
     'excel_plan_sheet': 'UK-View Plan',
     'excel_config_workbook': '/Users/thomasdeveloper/Documents/Projects/ppt-plan-visual-data/PlanningVisualConfig-01a.xlsx',
     'ppt_template_file': '/Users/thomasdeveloper/Documents/Projects/ppt-plan-visual-data/UK-ViewPlanOnePager.pptx',
 }
 parameters_02 = {
-    'excel_plan_file': '~/Downloads/KBT-Delivery.xlsx',
+    'excel_plan_workbook': '/Users/Development/Downloads/KBT-Delivery.xlsx',
     'excel_plan_sheet': 'KBT-Delivery',
-    'excel_config_workbook': '~/PyCharmProjects/ppt_plan_visual_testing/KBT-VisualConfig.xlsx',
-    'ppt_template_file': '/Users/Development/PycharmProjects/ppt_plan_visual_testing/KBT-DeliveryOnePager.pptx',
+    'excel_config_workbook': '/Users/Development/PycharmProjects/ppt-plan-visual/source/tests/test_resources/input_files/config_files/KBT-VisualConfig.xlsx',
+    'ppt_template_file': '/Users/Development/PycharmProjects/ppt-plan-visual/source/tests/test_resources/input_files/ppt_templates/PlanVisual-01.pptx',
 }
 
 parameters_to_use = parameters_02  # Set to whichever we are testing with or running.
@@ -38,10 +38,11 @@ def get_parameters():
     # There should either be no parameters or 7, otherwise report error and finish
     # Note the length of argv is one more than the number of arguments as the file is always first.
 
+    expected_num_args = 4
     if len(args) == 1:
         return parameters_to_use
 
-    if len(args) == 8:
+    if len(args) == expected_num_args + 1:
         parameters = {
             'excel_plan_workbook': args[1],
             'excel_plan_sheet': args[2],
@@ -50,7 +51,7 @@ def get_parameters():
         }
         return parameters
 
-    root_logger.error(f'Wrong number of parameters provided ({len(args)-1}).  Should be 0 or 4')
+    root_logger.error(f'Wrong number of parameters provided ({len(args)-1}).  Should be 0 or {expected_num_args}')
     return None
 
 
