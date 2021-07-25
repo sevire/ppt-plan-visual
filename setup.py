@@ -2,7 +2,7 @@ import pathlib
 from setuptools import setup, find_packages
 
 HERE = pathlib.Path(__file__).parent
-VERSION = '0.0.17'
+VERSION = '0.0.18'
 
 INSTALL_REQUIRES = [
       'numpy',
