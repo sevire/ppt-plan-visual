@@ -17,15 +17,15 @@ class ExcelFormatConfig:
         format_config_records = {}
         for id, format_excel_record in self.records.iterrows():
             format_name = format_excel_record['Format Name']
-            fill_red = format_excel_record['Fill Red']
-            fill_green = format_excel_record['Fill Green']
-            fill_blue = format_excel_record['Fill Blue']
-            line_red = format_excel_record['Line Red']
-            line_green = format_excel_record['Line Green']
-            line_blue = format_excel_record['Line Blue']
-            font_red = format_excel_record['Font Red']
-            font_green = format_excel_record['Font Green']
-            font_blue = format_excel_record['Font Blue']
+            fill_red = int(format_excel_record['Fill Red'])
+            fill_green = int(format_excel_record['Fill Green'])
+            fill_blue = int(format_excel_record['Fill Blue'])
+            line_red = int(format_excel_record['Line Red'])
+            line_green = int(format_excel_record['Line Green'])
+            line_blue = int(format_excel_record['Line Blue'])
+            font_red = int(format_excel_record['Font Red'])
+            font_green = int(format_excel_record['Font Green'])
+            font_blue = int(format_excel_record['Font Blue'])
             config_record = {
                 'fill_rgb': (fill_red, fill_green, fill_blue),
                 'line_rgb': (line_red, line_green, line_blue),
