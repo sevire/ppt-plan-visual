@@ -24,3 +24,7 @@ class TextFormatting:
     font_italic: bool = False
     font_colour: Color = Color(rgb=(0.1, 0.1, 0.1))
 
+    def __post_init__(self):
+        if isinstance(self.font_colour, tuple):
+            self.font_colour = Color(rgb=map(lambda x: x/255, self.font_colour))
+

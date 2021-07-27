@@ -292,6 +292,7 @@ class PlanVisualiser:
                 margin_bottom=self.plot_config.text_margin,
                 margin_left=self.plot_config.text_margin,
                 margin_right=self.plot_config.text_margin,
+                font_colour=format_info['font_colour_rgb']
             )
 
             plottable = PlotableElement(
@@ -305,13 +306,6 @@ class PlanVisualiser:
                 text_formatting
             )
             plottable.plot_ppt(self.shapes)
-            # shape = self.shapes.add_shape(
-            #     MSO_AUTO_SHAPE_TYPE.RECTANGLE, left, top, width, height
-            # )
-
-            # self.shape_fill(shape, format_info)
-            # self.shape_line(shape, format_info)
-            # self.add_text_to_shape(shape, swimlane, format_info, "swimlane")
 
     def plot_month_bar(self):
         """
