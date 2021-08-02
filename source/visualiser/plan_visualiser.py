@@ -5,7 +5,6 @@ from datetime import date
 from functools import reduce
 from typing import List
 
-import pandas as pd
 from pptx import Presentation
 from pptx.dml.color import RGBColor
 from pptx.enum.shapes import MSO_AUTO_SHAPE_TYPE, MSO_CONNECTOR_TYPE
@@ -416,15 +415,15 @@ class PlanVisualiser:
         :return:
         """
 
-        if pd.isnull(self.plot_driver.min_start_date):
+        if self.plot_driver.min_start_date is None:
             start_dates = [record.start_date for record in self.plan_data]
             self.plot_driver.min_start_date = reduce(
                 lambda min_date, start_date: start_date if start_date < min_date else min_date, start_dates)
 
-        if pd.isnull(self.plot_driver.max_end_date):
+        if self.plot_driver.max_end_date is None:
             end_dates = [record.end_date for record in self.plan_data]
             self.plot_driver.max_end_date = reduce(
-                lambda max_date, end_date: end_date if not pd.isnull(end_date) and end_date > max_date else max_date,
+                lambda max_date, end_date: end_date if not end_date is None and end_date > max_date else max_date,
                 end_dates)
 
         # Regardless of whether start and end dates have been configured, we need to align with whole month

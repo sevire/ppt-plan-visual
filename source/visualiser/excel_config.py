@@ -1,8 +1,7 @@
-import pandas as pd
-import numpy as np
 from pptx.util import Cm, Pt
 
 from source.visualiser.plot_driver import PlotDriver
+from source.visualiser.read_excel import read_excel, iterrows
 
 
 class ExcelFormatConfig:
@@ -10,12 +9,11 @@ class ExcelFormatConfig:
     Class to read configuration records from a sheet in an Excel File
     """
     def __init__(self, excel_path, excel_sheet, skip_rows=0):
-        records_with_nan = pd.read_excel(excel_path, sheet_name= excel_sheet, engine='openpyxl', skiprows=skip_rows)
-        self.records = records_with_nan.replace(np.nan, None)
+        self.excel_records = read_excel(excel_path, excel_sheet)
 
     def parse_format_config(self):
         format_config_records = {}
-        for id, format_excel_record in self.records.iterrows():
+        for id, format_excel_record in enumerate(self.excel_records):
             format_name = format_excel_record['Format Name']
             fill_red = int(format_excel_record['Fill Red'])
             fill_green = int(format_excel_record['Fill Green'])
@@ -62,11 +60,10 @@ class ExcelPlotConfig:
     """
 
     def __init__(self, excel_path, excel_sheet, skip_rows=0):
-        records_with_nan = pd.read_excel(excel_path, sheet_name=excel_sheet, engine='openpyxl', skiprows=skip_rows)
-        self.records = records_with_nan.replace(np.nan, None)
+        self.records = read_excel(excel_path, excel_sheet, skip_rows)
 
     def parse_plot_config(self):
-        record = self.records.iloc[0]
+        record = self.records[0]
 
         plot_area_config = {
             'top': Cm(record['Top']),
@@ -93,10 +90,10 @@ class ExcelSwimlaneConfig:
     """
 
     def __init__(self, excel_path, excel_sheet, skip_rows=0):
-        self.records = pd.read_excel(excel_path, sheet_name=excel_sheet, engine='openpyxl', skiprows=skip_rows)
+        self.records = read_excel(excel_path, excel_sheet, skip_rows)
 
     def parse_swimlane_config(self):
         swimlanes = []
-        for id, swimlane_record in self.records.iterrows():
+        for id, swimlane_record in enumerate(self.records):
             swimlanes.append(swimlane_record['Swimlane'])
         return swimlanes

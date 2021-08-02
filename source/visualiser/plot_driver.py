@@ -1,6 +1,5 @@
 from datetime import datetime
 
-import pandas as pd
 from dateutil.utils import today
 
 from source.visualiser.visual_element_shape import VisualElementShape
@@ -32,13 +31,13 @@ class PlotDriver:
             self.today = today()
 
         min_start_date = plot_config['min_start_date']
-        if pd.isnull(min_start_date):
+        if min_start_date is None:
             self.min_start_date = None  # Will get calculated from plan data later
         else:
             self.min_start_date = min_start_date
 
         max_end_date = plot_config['max_end_date']
-        if pd.isnull(max_end_date):
+        if max_end_date is None:
             self.max_end_date = None  # Will get calculated from plan data later
         else:
             self.max_end_date = max_end_date
