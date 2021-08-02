@@ -366,24 +366,28 @@ class PlanActivity:
                 right_margin = margin_adjust
             elif text_align == "left":
                 left_margin = margin_adjust
+        if self.text_formatting is None:
+            # Provide default text_formatting, but shouldn't really happen!
 
-        text_formatting = self.text_formatting
+            text_formatting = TextFormatting(
+                margin_top=Cm(0),
+                margin_left=left_margin,
+                margin_bottom=Cm(0),
+                margin_right=right_margin,
+                vertical_align='middle',
+                horizontal_align=text_align,
+                font_size=Pt(8),
+                font_bold=False,
+                font_italic=False,
+                font_colour=Color(rgb=(0, 0, 0))
+            )
+        else:
+            text_formatting = self.text_formatting
+
         text_formatting.horizontal_align = text_align
         text_formatting.margin_left = left_margin
         text_formatting.margin_right = right_margin
 
-        #     TextFormatting(
-        #     margin_top=Cm(0),
-        #     margin_left=left_margin,
-        #     margin_bottom=Cm(0),
-        #     margin_right=right_margin,
-        #     vertical_align='middle',
-        #     horizontal_align=text_align,
-        #     font_size=Pt(8),
-        #     font_bold=False,
-        #     font_italic=False,
-        #     font_colour=Color(rgb=(0, 0, 0))
-        # )
         shape_formatting = ShapeFormatting(
             line_colour=None,
             fill_colour=None,

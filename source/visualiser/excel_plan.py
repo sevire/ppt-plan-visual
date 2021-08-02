@@ -1,9 +1,9 @@
 import logging
-import pandas as pd
 
 from source.visualiser.exceptions import PptPlanVisualiserException
 from source.visualiser.activity_layout_attributes import ActivityLayoutAttributes
 from source.visualiser.plan_activity import PlanActivity
+from source.visualiser.read_excel import read_excel
 from source.visualiser.shape_formatting import ShapeFormatting
 
 root_logger = logging.getLogger()
@@ -44,16 +44,10 @@ class ExcelPlan:
             'Visual Flag': ExcelPlan.bool_converter
         }
 
-        pd_object = pd.read_excel(
-            excel_plan_file,
-            engine='openpyxl',
-            sheet_name=excel_plan_sheet_name,
-            usecols=read_cols,
-            converters=converters
-        )
+        pd_object = read_excel(excel_plan_file, excel_plan_sheet_name)
         plan_data = []
 
-        for index, milestone_data in pd_object.iterrows():
+        for index, milestone_data in enumerate(pd_object):
             flag = milestone_data['Visual Flag']
             if flag is True:
                 start_date = milestone_data['Start']
@@ -70,39 +64,39 @@ class ExcelPlan:
 
                 # Pre-processing and setting defaults for missing values
 
-                if pd.isnull(visual_text):
+                if visual_text is None:
                     text = description
                 else:
                     text = visual_text
 
-                if duration == '0':
+                if duration == '0' or duration == 0:
                     activity_type = 'milestone'
                     root_logger.debug(f'Activity [{description}:40.40] is a milestone')
                 else:
                     activity_type = 'bar'
                     root_logger.debug(f'Activity [{description}:40.40] is an activity')
 
-                if pd.isnull(visual_swimlane):
+                if visual_swimlane is None:
                     root_logger.warning(f'No swimlane specified for [{description:40.40}], setting to "Default"')
                     visual_swimlane = 'Default'
 
-                if pd.isnull(track_num):
+                if track_num is None:
                     root_logger.warning(f'No track num specified for [{description:40.40}], setting to 1')
                     track_num = 1
 
-                if pd.isnull(num_tracks):
+                if num_tracks is None:
                     root_logger.warning(f'Num tracks not specified for [{description:40.40}], setting to 1')
                     num_tracks = 1
 
-                if pd.isnull(format_1_id):
+                if format_1_id is None:
                     root_logger.warning(f'Format name not specified for [{description:40.40}], setting to "Default"')
                     format_1_id = 'Default'
 
-                if pd.isnull(format_2_id):
+                if format_2_id is None:
                     root_logger.warning(f'Format name not specified for [{description:40.40}], setting to "Default"')
                     format_2_id = None
 
-                if pd.isnull(text_layout):
+                if text_layout is None:
                     # Text layout isn't specified, so:
                     # - if it's a milestone position to left
                     # - if it's an activity, position within shape

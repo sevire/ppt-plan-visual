@@ -21,7 +21,15 @@ parameters_02 = {
     'ppt_template_file': '/Users/Development/PycharmProjects/ppt-plan-visual/source/tests/test_resources/input_files/ppt_templates/PlanVisual-01.pptx',
 }
 
-parameters_to_use = parameters_02  # Set to whichever we are testing with or running.
+parameters_03 = {
+    'excel_plan_workbook': '/Users/Development/CommandLine/scripts/BethPhDGANTT-visual.xlsx',
+    'excel_plan_sheet': 'Sheet1',
+    'excel_config_workbook': '/Users/Development/CommandLine/scripts/Beth-PHD-GANTT-config.xlsx',
+    'ppt_template_file': '/Users/Development/CommandLine/scripts/Beth-PHD-GANTT.pptx',
+}
+
+
+parameters_to_use = parameters_03  # Set to whichever we are testing with or running.
 
 
 def get_parameters():
