@@ -9,10 +9,10 @@ root_logger = logging.getLogger()
 # No args provided so use hard-coded defaults
 
 parameters_01 = {
-    'excel_plan_workbook': '/Users/thomasdeveloper/Documents/Projects/ppt-plan-visual-data/PlanningVisualConfig-01a.xlsx',
-    'excel_plan_sheet': 'UK-View Plan',
-    'excel_config_workbook': '/Users/thomasdeveloper/Documents/Projects/ppt-plan-visual-data/PlanningVisualConfig-01a.xlsx',
-    'ppt_template_file': '/Users/thomasdeveloper/Documents/Projects/ppt-plan-visual-data/UK-ViewPlanOnePager.pptx',
+    'excel_plan_workbook': '/Users/Development/Downloads/UK-View-Delivery.xlsx',
+    'excel_plan_sheet': 'UK-View-Delivery',
+    'excel_config_workbook': '/Users/Development/PycharmProjects/ppt_plan_visual_testing/KBT-VisualConfig.xlsx',
+    'ppt_template_file': '/Users/Development/PycharmProjects/ppt_plan_visual_testing/UKView-Del-DeliveryOnePager.pptx',
 }
 parameters_02 = {
     'excel_plan_workbook': '/Users/Development/Downloads/KBT-Delivery.xlsx',
@@ -29,7 +29,7 @@ parameters_03 = {
 }
 
 
-parameters_to_use = parameters_03  # Set to whichever we are testing with or running.
+parameters_to_use = parameters_01  # Set to whichever we are testing with or running.
 
 
 def get_parameters():

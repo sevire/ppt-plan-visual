@@ -46,6 +46,7 @@ class ExcelPlan:
 
         pd_object = read_excel(excel_plan_file, excel_plan_sheet_name)
         plan_data = []
+        swimlane_max_track_num = {}
 
         for index, milestone_data in enumerate(pd_object):
             flag = milestone_data['Visual Flag']
@@ -80,9 +81,21 @@ class ExcelPlan:
                     root_logger.warning(f'No swimlane specified for [{description:40.40}], setting to "Default"')
                     visual_swimlane = 'Default'
 
+                # Allocate track num if not already set and update max track num for this swimlane if necessary.
+
+                # Remember that track_num is None so that log message can be output later.
                 if track_num is None:
-                    root_logger.warning(f'No track num specified for [{description:40.40}], setting to 1')
-                    track_num = 1
+                    if visual_swimlane not in swimlane_max_track_num:
+                        track_num = 1
+                        swimlane_max_track_num[visual_swimlane] = 1
+                    else:
+                        track_num = swimlane_max_track_num[visual_swimlane] + 1
+                        swimlane_max_track_num[visual_swimlane] = max(track_num, swimlane_max_track_num[visual_swimlane])
+                    root_logger.warning(f'No track num specified for [{description:40.40}], setting to {track_num}')
+                else:
+                    if visual_swimlane not in swimlane_max_track_num:
+                        swimlane_max_track_num[visual_swimlane] = track_num
+                    swimlane_max_track_num[visual_swimlane] = max(track_num, swimlane_max_track_num[visual_swimlane])
 
                 if num_tracks is None:
                     root_logger.warning(f'Num tracks not specified for [{description:40.40}], setting to 1')
@@ -106,7 +119,7 @@ class ExcelPlan:
                         text_layout = 'Left'
                     elif activity_type == "bar":
                         root_logger.warning(f'Text layout for {activity_type} not specific for [{description:40.40}], setting to "Shape"')
-                        text_layout = 'Shape'
+                        text_layout = 'Left'
                     else:
                         root_logger.warning(f'Text layout not specific for [{description:40.40}], setting to "Left"')
                         raise PptPlanVisualiserException(f'Unknown value for activity_type ({activity_type})')
