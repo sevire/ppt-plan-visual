@@ -35,7 +35,7 @@ steps:
 
 - task: PublishPipelineArtifact@1
   inputs:
-    targetPath: $(System.DefaultWorkingDirectory)/build/ppt_plot_plan_main
+    targetPath: $(System.DefaultWorkingDirectory)/dist/ppt_plot_plan_main
     artifactName: ppt_plot_app
 
 - task: DownloadPipelineArtifact@2
