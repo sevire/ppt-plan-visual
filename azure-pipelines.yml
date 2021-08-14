@@ -30,6 +30,6 @@ steps:
   displayName: 'pytest'
 
 - script: |
-    pyinstaller ../source/visualiser/ppt_plot_plan_main.py --onefile
+    pyinstaller source/visualiser/ppt_plot_plan_main.py --onefile
   displayName: Creating executable
   
