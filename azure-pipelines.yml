@@ -33,5 +33,11 @@ steps:
     pyinstaller source/visualiser/ppt_plot_plan_main.py --onefile
   displayName: Creating executable
 
-- task: DownloadBuildArtifacts@0
-  displayName: Download command line app
+- task: PublishPipelineArtifact@1
+  inputs:
+    targetPath: $(System.DefaultWorkingDirectory)/build/ppt_plot_plan_main
+    artifactName: ppt_plot_app
+
+- task: DownloadPipelineArtifact@2
+  inputs:
+    artifact: ppt_plot_app
