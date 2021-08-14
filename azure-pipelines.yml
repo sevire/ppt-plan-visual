@@ -32,4 +32,6 @@ steps:
 - script: |
     pyinstaller source/visualiser/ppt_plot_plan_main.py --onefile
   displayName: Creating executable
-  
+
+- task: DownloadBuildArtifacts@0
+  displayName: Download command line app
