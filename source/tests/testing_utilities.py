@@ -7,6 +7,8 @@ def parse_date(date_string):
     date = dt.strptime(date_string, '%Y-%m-%d')
     return date
 
+def Cm_to_ppt_points(cm):
+    return cm * 360000
 
 def date_to_points(date, left, right, start_date, end_date):
     num_days = end_date - start_date + relativedelta(days=1)
