@@ -245,7 +245,8 @@ class PlanActivity:
                         self.shape_formatting_1
                     )
                     shapes.append(shape)
-        self.plot_ppt_text_shape(ppt_shapes_object)
+        shape = self.plot_ppt_text_shape(ppt_shapes_object)
+        shapes.append(shape)
         return shapes
 
     def is_current(self):

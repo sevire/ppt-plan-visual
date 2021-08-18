@@ -28,8 +28,15 @@ parameters_03 = {
     'ppt_template_file': '/Users/Development/CommandLine/scripts/Beth-PHD-GANTT.pptx',
 }
 
+parameters_04 = {
+    'excel_plan_workbook': '/Users/Development/PycharmProjects/ppt-plan-visual/source/tests/test_resources/unit_test_01/input_files/unit_test_01_config.xlsx',
+    'excel_plan_sheet': 'Plan',
+    'excel_config_workbook': '/Users/Development/PycharmProjects/ppt-plan-visual/source/tests/test_resources/unit_test_01/input_files/unit_test_01_config.xlsx',
+    'ppt_template_file': '/Users/Development/PycharmProjects/ppt-plan-visual/source/tests/test_resources/unit_test_01/input_files/unit_test_dummy_ppt.pptx',
+}
 
-parameters_to_use = parameters_01  # Set to whichever we are testing with or running.
+
+parameters_to_use = parameters_04  # Set to whichever we are testing with or running.
 
 
 def get_parameters():

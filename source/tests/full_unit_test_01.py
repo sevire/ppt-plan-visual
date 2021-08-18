@@ -3,7 +3,7 @@ from unittest import TestCase
 from ddt import ddt, data, unpack
 from pptx import Presentation
 
-from source.tests.test_resources.unit_test_01.expected_results import input_files_01, expected_results_01
+from source.tests.test_resources.unit_test_01.expected_results import input_files_01, expected_results_01, today
 from source.visualiser.plan_visualiser import PlanVisualiser
 
 
@@ -21,10 +21,11 @@ def plan_test_case_generator():
 
     :return:
     """
-    field_names = ['text', 'top', 'left']  # Drives which field is being tested in given test
+    field_names = ['top', 'left', 'width']  # Drives which field is being tested in given test
     for activity_seq_num, activity_exp_result in enumerate(expected_results_01["plan_data"]):
         activity_type, activity_text, shape_data = activity_exp_result
         num_shapes = len(shape_data)  # Will be 2 or 3
+        yield activity_seq_num, None, 'num_shapes', num_shapes
 
         # Yield shape 1 field expected results
         result_pairs = zip(field_names, shape_data[0])
@@ -33,13 +34,15 @@ def plan_test_case_generator():
             yield activity_seq_num, 'graphic_shape_1', result[0], result[1]
 
         # Yield shape 2 field expected results if there are two graphic shapes for this activity
-        if num_shapes == 2:
+        if num_shapes == 3:
             result_pairs = zip(field_names, shape_data[1])
             for result in result_pairs:
                 # This will feed key fields to the tewt to be able to generate the right actual result to test against.
                 yield activity_seq_num, 'graphic_shape_2', result[0], result[1]
 
         # Yield text field expected results
+        # First yield the text field (only for the text shape, not for graphic shapes)
+        yield activity_seq_num, 'text_shape', 'text', activity_text
         text_exp_res_index = num_shapes - 1  # Text field data will be the 2nd or 3rd entry depending upon num_shapes
         result_pairs = zip(field_names, shape_data[text_exp_res_index])
         for result in result_pairs:
@@ -95,17 +98,30 @@ class TestComprehensive01(TestCase):
         self.assertEqual(len(expected_plan_results),len(self.visualiser.plan_data))
 
         activity = self.visualiser.plan_data[activity_num]
+        activity.today_override = today
         activity.swimlane_start_track = self.visualiser.swimlane_data[activity.activity_layout_attributes.swimlane_name]['start_track']
         shapes = activity.plot_ppt_shapes(self.visualiser.shapes)
+        num_shapes = len(shapes)
+        shape = None
+        if shape_to_test is None:
+            # This test cases is not at shape level (probably number of shapes)
+            shape = None
         if shape_to_test == 'graphic_shape_1':
             shape = shapes[0]
         elif shape_to_test == 'graphic_shape_2':
             shape = shapes[1]
         elif shape_to_test == 'text_shape':
             shape = shapes [-1]  # Text will always be the last shape
-        shape = shapes[0]
 
-        if field_name == 'top':
+        if field_name == 'num_shapes':
+            self.assertEqual(expected_value, num_shapes)
+        elif field_name == 'top':
             self.assertEqual(expected_value, shape.top)
         elif field_name == 'left':
             self.assertEqual(expected_value, shape.left)
+        elif field_name == 'text':
+            self.assertEqual(expected_value, shape.text)
+        elif field_name == 'width':
+            self.assertEqual(expected_value, shape.width)
+        else:
+            self.fail("Unknown test parameters")
