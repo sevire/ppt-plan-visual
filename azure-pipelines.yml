@@ -7,7 +7,7 @@ trigger:
 - master
 
 pool:
-  vmImage: ubuntu-latest
+  vmImage: macOS-latest
 strategy:
   matrix:
     Python36:
@@ -30,6 +30,14 @@ steps:
   displayName: 'pytest'
 
 - script: |
-    pyinstaller ../source/visualiser/ppt_plot_plan_main.py --onefile
+    pyinstaller source/visualiser/ppt_plot_plan_main.py --onefile
   displayName: Creating executable
-  
+
+- task: PublishPipelineArtifact@1
+  inputs:
+    targetPath: $(System.DefaultWorkingDirectory)/dist/ppt_plot_plan_main
+    artifactName: ppt_plot_app
+
+- task: DownloadPipelineArtifact@2
+  inputs:
+    artifact: ppt_plot_app
