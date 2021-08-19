@@ -21,7 +21,7 @@ def plan_test_case_generator():
 
     :return:
     """
-    field_names = ['top', 'left', 'width']  # Drives which field is being tested in given test
+    field_names = ['top', 'left', 'width', 'height']  # Drives which field is being tested in given test
     for activity_seq_num, activity_exp_result in enumerate(expected_results_01["plan_data"]):
         activity_type, activity_text, shape_data = activity_exp_result
         num_shapes = len(shape_data)  # Will be 2 or 3
@@ -30,7 +30,7 @@ def plan_test_case_generator():
         # Yield shape 1 field expected results
         result_pairs = zip(field_names, shape_data[0])
         for result in result_pairs:
-            # This will feed key fields to the tewt to be able to generate the right actual result to test against.
+            # This will feed key fields to the test to be able to generate the right actual result to test against.
             yield activity_seq_num, 'graphic_shape_1', result[0], result[1]
 
         # Yield shape 2 field expected results if there are two graphic shapes for this activity
@@ -115,13 +115,7 @@ class TestComprehensive01(TestCase):
 
         if field_name == 'num_shapes':
             self.assertEqual(expected_value, num_shapes)
-        elif field_name == 'top':
-            self.assertEqual(expected_value, shape.top)
-        elif field_name == 'left':
-            self.assertEqual(expected_value, shape.left)
-        elif field_name == 'text':
-            self.assertEqual(expected_value, shape.text)
-        elif field_name == 'width':
-            self.assertEqual(expected_value, shape.width)
+        elif field_name in ['top', 'left', 'text', 'width', 'height']:
+            self.assertEqual(expected_value, getattr(shape, field_name))
         else:
             self.fail("Unknown test parameters")
