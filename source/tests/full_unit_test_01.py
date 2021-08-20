@@ -21,7 +21,7 @@ def plan_test_case_generator():
 
     :return:
     """
-    field_names = ['top', 'left', 'width', 'height']  # Drives which field is being tested in given test
+    field_names = ['top', 'left', 'width', 'height', 'fill red']  # Drives which field is being tested in given test
     for activity_seq_num, activity_exp_result in enumerate(expected_results_01["plan_data"]):
         activity_type, activity_text, shape_data = activity_exp_result
         num_shapes = len(shape_data)  # Will be 2 or 3
@@ -117,5 +117,17 @@ class TestComprehensive01(TestCase):
             self.assertEqual(expected_value, num_shapes)
         elif field_name in ['top', 'left', 'text', 'width', 'height']:
             self.assertEqual(expected_value, getattr(shape, field_name))
+        elif field_name in ['fill red', 'fill green', 'fill_blue']:
+            fill = shape.fill
+            if expected_value == 'Transparent':
+                msoFillBackground = 5  # Should find definition within python-pptx and import but couldn't find it.
+                self.assertEqual(fill.type, msoFillBackground)
+            else:
+                red, green, blue = fill.fore_color.rgb
+                if field_name == 'fill red':
+                    test_value = red
+                else:
+                    self.fail("Unknown colour parameter")
+                self.assertEqual(expected_value, test_value)
         else:
             self.fail("Unknown test parameters")
