@@ -1,5 +1,5 @@
 """
-Expected results for full unit test.
+Exxpected results for full unit test.
 
 This file sets out detailed expected results corresponding to a set of test files.
 
