@@ -68,7 +68,7 @@ class TestPlotDriver(TestCase):
     @unpack
     def test_date_to_x_coordinate(self, string_test_date, expected_x):
         test_date = parse_date(string_test_date)
-        x = self.plot_driver.date_to_x_coordinate(test_date)
+        x = round(self.plot_driver.date_to_x_coordinate(test_date))
         self.assertEqual(expected_x, x)
 
     @data(*plot_activity_test_generator())

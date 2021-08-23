@@ -147,7 +147,7 @@ class TestPlanActivity(TestCase):
 
         plotted_shapes = activity.plot_ppt_shapes(shapes)
 
-        self.assertEqual(1, len(plotted_shapes))
+        self.assertEqual(2, len(plotted_shapes))
         plotted_shape = plotted_shapes[0]
 
         self.assertEqual(exp_res['is_past'], activity.is_past())

@@ -17,6 +17,6 @@ def date_to_points(date, left, right, start_date, end_date):
     scale = (date - start_date) / num_days
     width = scale * display_width
 
-    rounded_width = round(width)
+    rounded_width = width
 
     return rounded_width

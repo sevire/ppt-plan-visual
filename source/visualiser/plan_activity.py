@@ -271,9 +271,9 @@ class PlanActivity:
         :return: left value to be used in ppt plot.
         """
         if case == "activity":
-            return round(self.plan_visual_config.date_to_x_coordinate(self.start_date, "start"))
+            return self.plan_visual_config.date_to_x_coordinate(self.start_date, "start")
         elif case == "today":
-            return round(self.plan_visual_config.date_to_x_coordinate(self.today, "start"))
+            return self.plan_visual_config.date_to_x_coordinate(self.today, "start")
         elif case == "milestone":
             milestone_width = self.plan_visual_config.milestone_width
             milestone_left_adjust = milestone_width / 2

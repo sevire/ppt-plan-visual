@@ -51,7 +51,7 @@ def plan_test_case_generator():
 
 
 @ddt
-class TestComprehensive01(TestCase):
+class TestFromExcelData(TestCase):
     def setUp(self) -> None:
         """
         Create plan object which drives tests.

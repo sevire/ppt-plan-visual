@@ -82,10 +82,10 @@ class PlotableElement:
         """
         plotted_shape = shapes_object.add_shape(
             self.shape.ppt_shape,
-            self.left,
-            self.top,
-            self.width,
-            self.height
+            round(self.left),
+            round(self.top),
+            round(self.width),
+            round(self.height)
         )
 
         # Adjust rounded corner radius, but only if the shape has corners

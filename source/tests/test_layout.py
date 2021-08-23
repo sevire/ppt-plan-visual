@@ -27,7 +27,7 @@ test_cases = [
             'num_days_in_date_range': 212
         },
         'expected_results': {  # Calculations are from Excel
-            'num_shapes': 1,
+            'num_shapes': 2,
             'left': 12768351,
             'width': 7246902,
             'top': 1965600
@@ -41,7 +41,7 @@ test_cases = [
             'num_days_in_date_range': 212
         },
         'expected_results': {  # Calculations are from Excel
-            'num_shapes': 2,
+            'num_shapes': 3,
             'left_1': 805211,
             'width_1': 9489991,
             'left_2': 10295202,

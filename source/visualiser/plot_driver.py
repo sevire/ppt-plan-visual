@@ -88,15 +88,15 @@ class PlotDriver:
         main = (num_days / self.num_days_in_date_range) * self.plot_area_width
         distance_from_left_of_plot_area = main + additional_units
 
-        x_coord = round(self.left + distance_from_left_of_plot_area)
+        x_coord = self.left + distance_from_left_of_plot_area
 
         return x_coord
 
     def track_number_to_y_coordinate(self, track_num):
-        return round(self.top + (track_num - 1) * (self.track_height + self.track_gap))
+        return self.top + (track_num - 1) * (self.track_height + self.track_gap)
 
     def height_of_track(self, num_tracks):
-        return round(num_tracks * self.track_height + (num_tracks-1) * self.track_gap)
+        return num_tracks * self.track_height + (num_tracks-1) * self.track_gap
 
     @staticmethod
     def string_date_to_date(string_date):
